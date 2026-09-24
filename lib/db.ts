@@ -169,18 +169,43 @@ class FileStore implements Store {
 
 let store: Store | undefined;
 
+/**
+ * Accepte aussi les noms créés par l'intégration Supabase de Vercel ; ignore les espaces collés par erreur.
+ * Ne garde que le domaine de l'URL : « https://xxx.supabase.co/rest/v1/ » → « https://xxx.supabase.co »
+ * (sinon supabase-js ajoute un second /rest/v1 et Supabase répond PGRST125).
+ */
+function supabaseEnv() {
+  const env = process.env;
+  const raw = (env.SUPABASE_URL || env.NEXT_PUBLIC_SUPABASE_URL || "").trim();
+  let url = raw;
+  try {
+    if (raw) url = new URL(raw).origin;
+  } catch {
+    /* URL invalide : on la laisse telle quelle, l'erreur Supabase sera affichée sur le dashboard */
+  }
+  return {
+    url,
+    key: (env.SUPABASE_SERVICE_ROLE_KEY || env.SUPABASE_SECRET_KEY || "").trim(),
+  };
+}
+
 export function getStore(): Store {
   if (store) return store;
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const { url, key } = supabaseEnv();
   if (url && key) {
     store = new SupabaseStore(createClient(url, key, { auth: { persistSession: false } }));
   } else if (process.env.VERCEL) {
-    throw new Error("SUPABASE_URL et SUPABASE_SERVICE_ROLE_KEY doivent être définies sur Vercel.");
+    const missing = [!url && "SUPABASE_URL", !key && "SUPABASE_SERVICE_ROLE_KEY"].filter(Boolean).join(" et ");
+    throw new Error(
+      `Variable(s) vide(s) ou absente(s) à l'exécution : ${missing}. Vérifie le nom exact et la valeur dans Vercel (Settings → Environment Variables), puis redéploie.`,
+    );
   } else {
     store = new FileStore();
   }
   return store;
 }
 
-export const usingSupabase = () => Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
+export const usingSupabase = () => {
+  const { url, key } = supabaseEnv();
+  return Boolean(url && key);
+};
