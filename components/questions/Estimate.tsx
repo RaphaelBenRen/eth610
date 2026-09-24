@@ -59,5 +59,5 @@ export function Estimate({ q, locale, t, answer, revealed, onAnswer }: QProps<Es
 }
 
 function compact(n: number, locale: string) {
-  return new Intl.NumberFormat(locale === "fr" ? "fr-CA" : "en-CA", { notation: "compact" }).format(n);
+  return new Intl.NumberFormat(locale === "fr" ? "fr-FR" : "en-CA", { notation: "compact" }).format(n);
 }

@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { StartForm } from "@/components/StartForm";
+import { CONTENT } from "@/content";
 import { isLocale } from "@/lib/types";
 import { getDict } from "@/messages";
 
@@ -37,7 +38,7 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
               </span>
               <span>
                 <span className="block text-sm font-semibold lg:text-base">{s.title}</span>
-                <span className="hidden text-sm text-muted lg:block">{s.text}</span>
+                <span className="hidden text-sm text-muted lg:block">{s.text.replace("{n}", String(CONTENT.quiz.length))}</span>
               </span>
             </li>
           ))}

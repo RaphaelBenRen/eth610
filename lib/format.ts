@@ -13,6 +13,15 @@ export function roundNice(n: number) {
 }
 
 export function formatUnit(n: number, unit: string | undefined, locale: Locale) {
+  // Grands nombres en toutes lettres : « 5,85 milliards » plutôt que « 5 850 000 000 ».
+  if (n >= 1_000_000) {
+    const big = new Intl.NumberFormat(locale === "fr" ? "fr-FR" : "en-CA", {
+      notation: "compact",
+      compactDisplay: "long",
+      maximumFractionDigits: 2,
+    }).format(n);
+    return unit ? `${big} ${unit}` : big;
+  }
   if (!unit) return formatNumber(n, locale);
   return unit === "%" ? `${formatNumber(n, locale)}${locale === "fr" ? " " : ""}%` : `${formatNumber(n, locale)} ${unit}`;
 }

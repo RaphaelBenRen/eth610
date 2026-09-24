@@ -3,17 +3,17 @@ import type { Dict } from "./fr";
 export const en: Dict = {
   meta: {
     title: "AI: what we don't see | ÉTS",
-    description: "A 5-minute survey and quiz on the ethical, environmental and social stakes of artificial intelligence.",
+    description: "A 5-minute survey and quiz on the hidden costs of artificial intelligence: environmental, social, economic and ethical.",
   },
   home: {
     kicker: "Student project · ÉTS Montréal",
     title: "AI: what we don't see",
     subtitle:
-      "Every AI request has a cost: energy, water, hardware, human labour. Test your knowledge and take stock of your own use.",
+      "Energy, water, invisible human labour, discrimination, jobs: AI has costs we don't see. Test your knowledge and take stock of your own use.",
     pills: ["⏱️ 5 minutes", "🔒 100% anonymous", "📱 No sign-up"],
     steps: [
       { title: "Survey", text: "Your opinion and habits" },
-      { title: "Quiz", text: "8 questions, with the answers explained" },
+      { title: "Quiz", text: "{n} questions, with the answers explained" },
       { title: "Survey", text: "Has your opinion changed?" },
     ],
     consent:
@@ -42,7 +42,7 @@ export const en: Dict = {
       quiz: {
         emoji: "🧠",
         title: "Quiz time!",
-        text: "8 questions to test your knowledge. After each answer, we explain the right one.",
+        text: "{n} questions about what AI really costs, to the planet and to people. After each answer, we explain.",
         cta: "Let's go",
       },
       post: {

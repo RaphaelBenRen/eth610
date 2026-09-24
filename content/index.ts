@@ -4,7 +4,7 @@ import { quiz } from "./quiz";
 import { surveyPost } from "./survey-post";
 
 /** À changer quand on modifie les questions après le lancement (stocké avec chaque session). */
-export const CONTENT_VERSION = "2026-09-24-brouillon";
+export const CONTENT_VERSION = "2026-09-24-brouillon-v2";
 
 export const CONTENT: Record<Phase, Question[]> = {
   pre: surveyPre,

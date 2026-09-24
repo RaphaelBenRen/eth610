@@ -216,7 +216,7 @@ function BreakScreen({
           {t.flow.score} <strong>{correct} / {CONTENT.quiz.length}</strong>
         </p>
       )}
-      <p className="mt-4 max-w-md text-muted">{b.text}</p>
+      <p className="mt-4 max-w-md text-muted">{b.text.replace("{n}", String(CONTENT.quiz.length))}</p>
       <button type="button" className="btn btn-primary mt-8 w-full sm:w-auto" onClick={onNext} autoFocus>
         {b.cta} →
       </button>

@@ -1,45 +1,45 @@
 import type { L } from "@/lib/types";
 
-/* Conseils de l'écran final. BROUILLON : à valider par l'équipe. */
+/* Conseils de l'écran final. BROUILLON : à valider par l'équipe. */
 export const tips: { emoji: string; title: L; text: L }[] = [
   {
-    emoji: "🧰",
-    title: { fr: "Le bon outil pour le bon besoin", en: "The right tool for the job" },
+    emoji: "🤔",
+    title: { fr: "Se demander : ai-je vraiment besoin d'une IA ?", en: "Ask yourself: do I really need AI?" },
     text: {
-      fr: "Une recherche classique, un dictionnaire ou une calculatrice suffisent souvent, et consomment bien moins.",
-      en: "A regular search, a dictionary or a calculator is often enough, and uses far less.",
-    },
-  },
-  {
-    emoji: "🎯",
-    title: { fr: "Des demandes précises", en: "Precise prompts" },
-    text: {
-      fr: "Un prompt clair du premier coup évite de relancer 5 fois la même demande.",
-      en: "A clear prompt the first time avoids regenerating the same request 5 times.",
+      fr: "Une recherche classique, un dictionnaire ou ta propre réflexion suffisent souvent, et consomment bien moins.",
+      en: "A regular search, a dictionary or your own thinking is often enough, and uses far less.",
     },
   },
   {
     emoji: "🖼️",
-    title: { fr: "Images et vidéos avec modération", en: "Go easy on images and video" },
+    title: { fr: "Éviter les générations « pour le fun »", en: "Skip “just for fun” generations" },
     text: {
-      fr: "Générer des images ou des vidéos « pour le fun » en boucle a un coût énergétique bien plus élevé que du texte.",
-      en: "Generating images or videos “for fun” over and over costs far more energy than text.",
-    },
-  },
-  {
-    emoji: "🪶",
-    title: { fr: "Des modèles plus légers", en: "Lighter models" },
-    text: {
-      fr: "Pour les tâches simples, un petit modèle (ou un modèle local) fait souvent l'affaire.",
-      en: "For simple tasks, a small (or local) model often does the job.",
+      fr: "Images et vidéos générées en boucle pour suivre une tendance ont un coût énergétique et en eau bien réel.",
+      en: "Images and videos generated over and over to follow a trend have a very real energy and water cost.",
     },
   },
   {
     emoji: "🔍",
-    title: { fr: "Rester curieux·se et critique", en: "Stay curious and critical" },
+    title: { fr: "Garder un esprit critique", en: "Stay critical" },
     text: {
-      fr: "Informe-toi sur les conditions de travail et les politiques environnementales des entreprises d'IA que tu utilises.",
-      en: "Learn about the working conditions and environmental policies of the AI companies you use.",
+      fr: "Une IA n'est pas neutre : vérifie ses réponses, surtout quand elles concernent des personnes ou des groupes.",
+      en: "AI is not neutral: check its answers, especially when they concern people or groups.",
+    },
+  },
+  {
+    emoji: "🎨",
+    title: { fr: "Respecter le travail des autres", en: "Respect other people's work" },
+    text: {
+      fr: "Soutiens les artistes et créateurs humains ; ne génère pas d'images de vraies personnes sans leur accord.",
+      en: "Support human artists and creators; never generate images of real people without their consent.",
+    },
+  },
+  {
+    emoji: "📣",
+    title: { fr: "En parler et exiger la transparence", en: "Talk about it and demand transparency" },
+    text: {
+      fr: "Partage ce que tu as appris et interroge les entreprises (et ton futur employeur) sur leurs impacts sociaux et environnementaux.",
+      en: "Share what you learned and question companies (and your future employer) about their social and environmental impacts.",
     },
   },
 ];

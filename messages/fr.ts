@@ -1,17 +1,17 @@
 export const fr = {
   meta: {
     title: "IA : ce qu'on ne voit pas | ÉTS",
-    description: "Un sondage et un quiz de 5 minutes sur les enjeux éthiques, environnementaux et sociaux de l'intelligence artificielle.",
+    description: "Un sondage et un quiz de 5 minutes sur les coûts cachés de l'intelligence artificielle : environnementaux, sociaux, économiques et éthiques.",
   },
   home: {
     kicker: "Projet étudiant · ÉTS Montréal",
     title: "L'IA, ce qu'on ne voit pas",
     subtitle:
-      "Chaque requête à une IA a un coût : énergie, eau, matériel, travail humain. Teste tes connaissances et fais le point sur ton usage.",
+      "Énergie, eau, travail humain invisible, discriminations, emplois : l'IA a des coûts qu'on ne voit pas. Teste tes connaissances et fais le point sur ton usage.",
     pills: ["⏱️ 5 minutes", "🔒 100 % anonyme", "📱 Sans inscription"],
     steps: [
       { title: "Sondage", text: "Ton avis et tes habitudes" },
-      { title: "Quiz", text: "8 questions, avec les réponses expliquées" },
+      { title: "Quiz", text: "{n} questions, avec les réponses expliquées" },
       { title: "Sondage", text: "Ton avis a-t-il changé ?" },
     ],
     consent:
@@ -40,7 +40,7 @@ export const fr = {
       quiz: {
         emoji: "🧠",
         title: "Place au quiz !",
-        text: "8 questions pour tester tes connaissances. Après chaque réponse, on t'explique la bonne réponse.",
+        text: "{n} questions sur ce que l'IA coûte vraiment, à la planète et aux humains. Après chaque réponse, on t'explique.",
         cta: "C'est parti",
       },
       post: {
