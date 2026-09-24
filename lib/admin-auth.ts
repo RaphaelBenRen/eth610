@@ -7,13 +7,14 @@ const isProd = () => Boolean(process.env.VERCEL) || process.env.NODE_ENV === "pr
 
 /** En développement local, des valeurs par défaut évitent d'avoir à configurer quoi que ce soit. */
 function secret() {
-  const s = process.env.ADMIN_SESSION_SECRET ?? (isProd() ? undefined : "dev-secret-change-me-dev-secret-change-me");
+  const s = process.env.ADMIN_SESSION_SECRET?.trim() || (isProd() ? undefined : "dev-secret-change-me-dev-secret-change-me");
   if (!s || s.length < 32) throw new Error("ADMIN_SESSION_SECRET manquante ou trop courte (32 caractères min.)");
   return new TextEncoder().encode(s);
 }
 
 export function adminPassword(): string {
-  const p = process.env.ADMIN_PASSWORD ?? (isProd() ? undefined : "admin");
+  // trim : un retour à la ligne collé par erreur dans Vercel ne doit pas bloquer la connexion.
+  const p = process.env.ADMIN_PASSWORD?.trim() || (isProd() ? undefined : "admin");
   if (!p) throw new Error("ADMIN_PASSWORD manquante");
   return p;
 }

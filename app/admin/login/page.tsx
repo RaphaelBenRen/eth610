@@ -6,13 +6,13 @@ import { useState } from "react";
 export default function LoginPage() {
   const router = useRouter();
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError(false);
+    setError(null);
     const res = await fetch("/api/admin/login", {
       method: "POST",
       headers: { "content-type": "application/json" },
@@ -22,7 +22,11 @@ export default function LoginPage() {
     if (res.ok) {
       router.replace("/admin");
       router.refresh();
-    } else setError(true);
+    } else if (res.status === 401) setError("Mot de passe incorrect.");
+    else {
+      const body = (await res.json().catch(() => null)) as { message?: string } | null;
+      setError(`Erreur serveur (${res.status}) : ${body?.message ?? "réessaie plus tard."}`);
+    }
   };
 
   return (
@@ -42,7 +46,7 @@ export default function LoginPage() {
           onChange={(e) => setPassword(e.target.value)}
           className="mt-1 w-full rounded-xl border border-line bg-bg px-4 py-3 outline-none focus:border-brand focus:ring-4 focus:ring-brand/20"
         />
-        {error && <p className="mt-2 text-sm text-bad">Mot de passe incorrect.</p>}
+        {error && <p className="mt-2 text-sm text-bad">{error}</p>}
         <button type="submit" className="btn btn-primary mt-6 w-full" disabled={!password || loading}>
           {loading ? "…" : "Se connecter"}
         </button>
