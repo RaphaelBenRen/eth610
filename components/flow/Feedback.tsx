@@ -39,7 +39,8 @@ export function Feedback({
   }, []);
 
   const explanation = "explanation" in q ? q.explanation : undefined;
-  const source = "source" in q ? q.source : undefined;
+  const raw = "source" in q ? q.source : undefined;
+  const sources = raw ? (Array.isArray(raw) ? raw : [raw]) : [];
   const comparison = q.type === "estimate" ? q.comparison?.[locale] : undefined;
 
   return (
@@ -73,13 +74,20 @@ export function Feedback({
         ))}
       {comparison && <p className="mt-1 font-medium">{comparison}</p>}
       {explanation && <p className="mt-2 leading-relaxed">{explanation[locale]}</p>}
-      {source && (
-        <p className="mt-3 text-sm text-muted">
-          {t.flow.feedback.source}{" "}
-          <a href={source.url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-ink">
-            {source.label}
-          </a>
-        </p>
+      {sources.length > 0 && (
+        <div className="mt-3 text-sm text-muted">
+          {sources.length > 1 ? t.flow.feedback.sources : t.flow.feedback.source}
+          <ul className={sources.length > 1 ? "mt-1 list-inside list-disc space-y-0.5" : "inline"}>
+            {sources.map((src) => (
+              <li key={src.url} className={sources.length > 1 ? "" : "inline"}>
+                {sources.length === 1 && " "}
+                <a href={src.url} target="_blank" rel="noopener noreferrer" className="underline underline-offset-2 hover:text-ink">
+                  {src.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
       <div className="mt-5 flex justify-end">
         <button ref={btn} type="button" className="btn btn-primary w-full sm:w-auto" onClick={onNext}>

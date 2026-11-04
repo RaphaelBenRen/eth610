@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { CONTENT } from "@/content";
+import { demoQuestions } from "@/content/demo";
 import { REPEATED } from "@/content/survey-pre";
 import { tips } from "@/content/tips";
 import { answerSchema, kendallScore, score } from "./scoring";
@@ -41,7 +42,7 @@ describe("answerSchema", () => {
   it("rejette une option inconnue et un classement incomplet", () => {
     const single = CONTENT.quiz.find((q) => q.type === "single")!;
     expect(answerSchema(single).safeParse({ choice: "zzz" }).success).toBe(false);
-    const rank = CONTENT.quiz.find((q) => q.type === "ranking")!;
+    const rank = demoQuestions.map((d) => d.q).find((q) => q.type === "ranking")!;
     expect(answerSchema(rank).safeParse({ order: ["video"] }).success).toBe(false);
   });
 });

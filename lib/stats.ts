@@ -21,7 +21,6 @@ export type QuestionStats = {
   n: number;
   /** Quiz : justesse moyenne (0-1). */
   successRate: number | null;
-  medianTimeMs: number | null;
   bars: Bar[];
   /** Jauge / estimation : moyenne, médiane, bonne réponse. */
   summary?: { mean: number; median: number; correct?: number; unit?: string };
@@ -46,7 +45,6 @@ export type Stats = {
     started: number;
     completed: number;
     completionRate: number | null;
-    medianDurationS: number | null;
     avgQuizScore: number | null;
     locales: Record<string, number>;
     devices: Record<string, number>;
@@ -104,7 +102,6 @@ function questionStats(phase: Phase, q: Question, rows: AnswerRow[]): QuestionSt
     q,
     n,
     successRate: phase === "quiz" ? mean(quizRows.map((r) => r.correctness!)) : null,
-    medianTimeMs: median(rows.map((r) => r.time_ms).filter((t): t is number => t !== null)),
     bars: [],
   };
   const share = (c: number) => (n ? c / n : 0);
@@ -139,7 +136,7 @@ function questionStats(phase: Phase, q: Question, rows: AnswerRow[]): QuestionSt
     case "likert":
       base.bars = [1, 2, 3, 4, 5].map((l) => {
         const c = count((r) => "level" in r.value && r.value.level === l);
-        const label = l === 1 ? `1 · ${q.minLabel.fr}` : l === 5 ? `5 · ${q.maxLabel.fr}` : String(l);
+        const label = q.labels?.[l - 1]?.fr ?? (l === 1 ? `1 · ${q.minLabel.fr}` : l === 5 ? `5 · ${q.maxLabel.fr}` : String(l));
         return { label, count: c, share: share(c) };
       });
       break;
@@ -198,9 +195,6 @@ export function computeStats(sessions: SessionRow[], answers: AnswerRow[]): Stat
     started: sessions.length,
     completed: completed.length,
     completionRate: sessions.length ? completed.length / sessions.length : null,
-    medianDurationS: median(
-      completed.map((s) => (new Date(s.completed_at!).getTime() - new Date(s.started_at).getTime()) / 1000),
-    ),
     avgQuizScore: mean(completed.map((s) => s.quiz_score).filter((x): x is number => x !== null)),
     locales: tally("locale"),
     devices: tally("device"),

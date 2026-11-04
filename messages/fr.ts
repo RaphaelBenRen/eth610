@@ -7,10 +7,10 @@ export const fr = {
     kicker: "Projet étudiant · ÉTS Montréal",
     title: "L'IA, ce qu'on ne voit pas",
     subtitle:
-      "Énergie, eau, travail humain invisible, discriminations, emplois : l'IA a des coûts qu'on ne voit pas. Teste tes connaissances et fais le point sur ton usage.",
+      "Énergie, eau, biais, vie privée, coûts : l'IA a des impacts qu'on ne voit pas. Teste tes connaissances et fais le point sur ton usage.",
     pills: ["⏱️ 5 minutes", "🔒 100 % anonyme", "📱 Sans inscription"],
     steps: [
-      { title: "Sondage", text: "Ton avis et tes habitudes" },
+      { title: "Sondage", text: "Ton avis sur l'IA" },
       { title: "Quiz", text: "{n} questions, avec les réponses expliquées" },
       { title: "Sondage", text: "Ton avis a-t-il changé ?" },
     ],
@@ -58,6 +58,7 @@ export const fr = {
       answerIs: "Réponse :",
       yourAnswer: "Ta réponse :",
       source: "Source :",
+      sources: "Sources :",
     },
   },
   end: {

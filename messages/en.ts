@@ -9,10 +9,10 @@ export const en: Dict = {
     kicker: "Student project · ÉTS Montréal",
     title: "AI: what we don't see",
     subtitle:
-      "Energy, water, invisible human labour, discrimination, jobs: AI has costs we don't see. Test your knowledge and take stock of your own use.",
+      "Energy, water, bias, privacy, costs: AI has impacts we don't see. Test your knowledge and take stock of your own use.",
     pills: ["⏱️ 5 minutes", "🔒 100% anonymous", "📱 No sign-up"],
     steps: [
-      { title: "Survey", text: "Your opinion and habits" },
+      { title: "Survey", text: "Your opinion on AI" },
       { title: "Quiz", text: "{n} questions, with the answers explained" },
       { title: "Survey", text: "Has your opinion changed?" },
     ],
@@ -60,6 +60,7 @@ export const en: Dict = {
       answerIs: "Answer:",
       yourAnswer: "Your answer:",
       source: "Source:",
+      sources: "Sources:",
     },
   },
   end: {

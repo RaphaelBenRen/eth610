@@ -2,7 +2,9 @@ import type { Dict } from "@/messages";
 import type { Locale, Question } from "./types";
 
 export function formatNumber(n: number, locale: Locale) {
-  return new Intl.NumberFormat(locale === "fr" ? "fr-CA" : "en-CA", { maximumFractionDigits: 1 }).format(n);
+  const opts: Intl.NumberFormatOptions =
+    n > 0 && n < 1 ? { maximumSignificantDigits: 2 } : { maximumFractionDigits: 1 };
+  return new Intl.NumberFormat(locale === "fr" ? "fr-CA" : "en-CA", opts).format(n);
 }
 
 /** Arrondit à 2 chiffres significatifs (pour le curseur logarithmique). */

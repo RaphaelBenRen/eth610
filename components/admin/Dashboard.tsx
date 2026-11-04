@@ -7,7 +7,6 @@ import type { Phase } from "@/lib/types";
 
 const pct = (x: number | null, digits = 0) => (x === null ? "—" : `${(x * 100).toFixed(digits)} %`);
 const num = (x: number, digits = 1) => x.toLocaleString("fr-CA", { maximumFractionDigits: digits });
-const duration = (s: number | null) => (s === null ? "—" : `${Math.floor(s / 60)} min ${String(Math.round(s % 60)).padStart(2, "0")} s`);
 
 const TYPE_LABEL: Record<string, string> = {
   single: "QCM",
@@ -55,11 +54,10 @@ export function Kpis({ kpis }: { kpis: Stats["kpis"] }) {
       .map(([k, v]) => `${k} ${v}`)
       .join(" · ") || "—";
   return (
-    <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
+    <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
       <Tile label="Sessions démarrées" value={String(kpis.started)} />
       <Tile label="Sessions terminées" value={String(kpis.completed)} />
       <Tile label="Taux de complétion" value={pct(kpis.completionRate)} />
-      <Tile label="Durée médiane" value={duration(kpis.medianDurationS)} sub="sessions terminées" />
       <Tile label="Score moyen au quiz" value={pct(kpis.avgQuizScore)} sub="justesse moyenne" />
       <Tile label="Langue / appareil" value={split(kpis.locales)} sub={split(kpis.devices)} small />
     </div>
@@ -214,7 +212,6 @@ function QuestionCard({ s }: { s: QuestionStats }) {
         <span className="rounded-full bg-surface-2 px-2 py-0.5 font-medium">{TYPE_LABEL[s.q.type]}</span>
         <span className="text-muted">n = {s.n}</span>
         {s.successRate !== null && <span className="text-muted">· réussite {pct(s.successRate)}</span>}
-        {s.medianTimeMs !== null && <span className="text-muted">· temps médian {num(s.medianTimeMs / 1000)} s</span>}
         <span className="ml-auto font-mono text-muted">{s.q.id}</span>
       </div>
       <h3 className="mt-2 font-semibold">{s.q.prompt.fr}</h3>

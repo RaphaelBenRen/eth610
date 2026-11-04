@@ -20,10 +20,13 @@ type Base = {
   help?: L;
 };
 
+export type Source = { label: string; url: string };
+
 /** Champs affichés après la réponse, uniquement dans le quiz. */
 export type QuizExtras = {
   explanation?: L;
-  source?: { label: string; url: string };
+  /** Une ou plusieurs sources affichées sous l'explication. */
+  source?: Source | Source[];
 };
 
 export type SingleQ = Base & QuizExtras & { type: "single"; options: Option[]; correct?: string };
@@ -31,8 +34,12 @@ export type MultiQ = Base & QuizExtras & { type: "multi"; options: Option[]; cor
 export type TrueFalseQ = Base & QuizExtras & { type: "true_false"; correct?: boolean };
 export type ABQ = Base &
   QuizExtras & { type: "ab"; a: Option; b: Option; correct?: "a" | "b" };
-/** Échelle d'accord 1-5 (sondages uniquement). */
-export type LikertQ = Base & { type: "likert"; minLabel: L; maxLabel: L };
+/**
+ * Échelle d'accord 1-5 (sondages uniquement). Niveau 1 = désaccord total, 5 = accord total.
+ * Si `labels` est fourni (5 libellés, du niveau 1 au niveau 5), chaque option est affichée en toutes lettres,
+ * de l'accord au désaccord ; sinon, 5 pastilles avec `minLabel` / `maxLabel` aux extrémités.
+ */
+export type LikertQ = Base & { type: "likert"; minLabel: L; maxLabel: L; labels?: L[] };
 /** Jauge linéaire (par défaut 0-100). */
 export type GaugeQ = Base &
   QuizExtras & {

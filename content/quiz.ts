@@ -1,198 +1,182 @@
 import type { Question } from "@/lib/types";
 
 /*
- * Quiz. BROUILLON : ⚠️ chiffres À VÉRIFIER par l'équipe avant la mise en ligne
- * (tirés des sources citées ; les estimations évoluent vite).
- * Objectif : faire prendre conscience des coûts cachés de l'IA, sur 4 dimensions :
- * 🌍 environnement · 👥 social · 💰 économie · ⚖️ éthique.
- * Chaque question affiche `explanation` et `source` après la réponse.
+ * Quiz, contenu final de l'équipe.
+ * Chaque question correspond à une affirmation du sondage :
+ *   Q1 → Environnement 1 · Q2 → Environnement 2 · Q3 → Société 1 · Q4 → Société 2 · Q5 → Économie 1.
+ * `explanation` et `source` sont affichés après la réponse.
  */
 export const quiz: Question[] = [
-  // 🌍 Environnement : l'échelle du problème
+  // Q1 · 🌍 Environnement 1
   {
-    id: "k_dc_2030",
-    type: "single",
-    prompt: {
-      fr: "D'ici 2030, les centres de données (tirés par l'IA) pourraient consommer autant d'électricité que…",
-      en: "By 2030, data centres (driven by AI) could use as much electricity as…",
-    },
-    options: [
-      { id: "a", emoji: "🇧🇪", label: { fr: "La Belgique", en: "Belgium" } },
-      { id: "b", emoji: "🇨🇦", label: { fr: "Le Québec", en: "Quebec" } },
-      { id: "c", emoji: "🇯🇵", label: { fr: "Le Japon tout entier", en: "All of Japan" } },
-      { id: "d", emoji: "🏙️", label: { fr: "La ville de Montréal", en: "The city of Montreal" } },
-    ],
-    correct: "c",
-    explanation: {
-      fr: "≈ 945 TWh en 2030, soit un peu plus que tout le Japon aujourd'hui : la consommation aura plus que doublé en 6 ans, et l'IA en est le premier moteur. Une grande partie de cette électricité vient encore du gaz et du charbon.",
-      en: "≈ 945 TWh in 2030, slightly more than all of Japan today: consumption will have more than doubled in 6 years, with AI as the main driver. Much of this electricity still comes from gas and coal.",
-    },
-    source: { label: "AIE / IEA — Energy and AI (2025)", url: "https://www.iea.org/reports/energy-and-ai/executive-summary" },
-  },
-
-  // ⚖️ Éthique : biais et discriminations
-  {
-    id: "k_face_bias",
-    type: "gauge",
-    prompt: {
-      fr: "Des IA de reconnaissance faciale se trompaient dans 0,8 % des cas pour les hommes à peau claire. Et pour les femmes à peau foncée ?",
-      en: "Facial-analysis AIs were wrong 0.8% of the time for lighter-skinned men. What about darker-skinned women?",
-    },
-    help: { fr: "Taux d'erreur, glisse le curseur", en: "Error rate, drag the slider" },
-    min: 0,
-    max: 100,
-    unit: "%",
-    correct: 34.7,
-    tolerance: 25,
-    explanation: {
-      fr: "Jusqu'à 34,7 % d'erreurs, soit plus de 40 fois plus. Une IA apprend à partir de données qui reflètent nos inégalités : elle peut les reproduire, voire les amplifier. Aux États-Unis, des personnes noires ont déjà été arrêtées à tort à cause d'une reconnaissance faciale.",
-      en: "Up to 34.7% errors, over 40 times more. AI learns from data that reflects our inequalities: it can reproduce and even amplify them. In the US, Black people have already been wrongfully arrested because of facial recognition.",
-    },
-    source: { label: "Buolamwini & Gebru (2018), Gender Shades — MIT", url: "https://proceedings.mlr.press/v81/buolamwini18a.html" },
-  },
-
-  // 👥 Social : le travail invisible
-  {
-    id: "k_click_workers",
-    type: "true_false",
-    prompt: {
-      fr: "Pour rendre un des chatbots les plus utilisés au monde « moins toxique », des travailleurs au Kenya ont lu des descriptions de violences et d'abus pour moins de 2 $ US de l'heure.",
-      en: "To make one of the world's most used chatbots “less toxic”, workers in Kenya read descriptions of violence and abuse for less than US$2 an hour.",
-    },
-    correct: true,
-    explanation: {
-      fr: "Derrière chaque IA, des milliers de personnes étiquettent et filtrent des données, souvent dans des pays du Sud, mal payées et exposées à des contenus traumatisants. Plusieurs ont témoigné de séquelles psychologiques.",
-      en: "Behind every AI, thousands of people label and filter data, often in the Global South, poorly paid and exposed to traumatic content. Several have reported lasting psychological harm.",
-    },
-    source: { label: "TIME (janvier 2023)", url: "https://time.com/6247678/openai-chatgpt-kenya-workers/" },
-  },
-
-  // ⚖️ Éthique / 💰 économie : consentement et droits d'auteur
-  {
-    id: "k_scraped_images",
+    id: "k_env_1_prompt_energy",
     type: "estimate",
     prompt: {
-      fr: "Combien d'images (photos, dessins, œuvres d'artistes…) ont été récupérées sur internet, sans demander la permission, pour une seule base de données qui a servi à entraîner des IA d'images ?",
-      en: "How many images (photos, drawings, artworks…) were collected from the internet, without asking permission, for a single dataset used to train image AIs?",
+      fr: "Quelle quantité d'énergie consomme une requête texte « médiane » de Gemini, en wattheures (Wh) ?",
+      en: "How much energy does a “median” Gemini text prompt use, in watt-hours (Wh)?",
     },
-    min: 1_000_000,
-    max: 100_000_000_000,
-    unit: { fr: "d'images", en: "images" },
-    correct: 5_850_000_000,
+    min: 0.01,
+    max: 100,
+    unit: { fr: "Wh", en: "Wh" },
+    correct: 0.24,
     comparison: {
-      fr: "≈ 5,85 milliards, presque une image par être humain sur Terre",
-      en: "≈ 5.85 billion, nearly one image per human on Earth",
+      fr: "≈ une télévision allumée pendant moins de 9 secondes",
+      en: "≈ a TV switched on for less than 9 seconds",
     },
     explanation: {
-      fr: "Des œuvres d'artistes, des photos personnelles, parfois même des images médicales, sans consentement ni rémunération. Des IA peuvent ensuite imiter le style d'un artiste vivant et le concurrencer.",
-      en: "Artists' works, personal photos, sometimes even medical images, without consent or payment. AIs can then imitate a living artist's style and compete with them.",
+      fr: "Environ 0,24 Wh pour une requête texte médiane de Gemini, avec 0,03 gCO₂e émis et 0,26 mL d'eau consommée, soit environ cinq gouttes. Une requête consomme très peu : l'impact vient de leur nombre. Pour 2 heures par jour à raison d'une requête par minute (120 requêtes), on arrive à environ 29 Wh, soit moins de 18 minutes de télévision, et environ 31 mL d'eau, soit deux cuillères à soupe.",
+      en: "About 0.24 Wh for a median Gemini text prompt, with 0.03 gCO₂e emitted and 0.26 mL of water consumed, about five drops. A single prompt uses very little: the impact comes from their number. For 2 hours a day at one prompt per minute (120 prompts), that comes to about 29 Wh, less than 18 minutes of TV, and about 31 mL of water, two tablespoons.",
     },
-    source: { label: "LAION-5B (Schuhmann et al., 2022)", url: "https://arxiv.org/abs/2210.08402" },
+    source: {
+      label: "Google — Measuring the environmental impact of AI inference (août 2025)",
+      url: "https://cloud.google.com/blog/products/infrastructure/measuring-the-environmental-impact-of-ai-inference",
+    },
   },
 
-  // 🌍 Environnement : les promesses climatiques
+  // Q2 · 🌍 Environnement 2
   {
-    id: "k_bigtech_emissions",
-    type: "ab",
-    prompt: {
-      fr: "Entre 2019 et 2023, avec l'essor de l'IA, les émissions de CO₂ de Google ont…",
-      en: "Between 2019 and 2023, with the rise of AI, Google's CO₂ emissions…",
-    },
-    a: { id: "a", emoji: "📉", label: { fr: "Baissé de 20 %", en: "Fell by 20%" } },
-    b: { id: "b", emoji: "📈", label: { fr: "Augmenté de 48 %", en: "Rose by 48%" } },
-    correct: "b",
-    explanation: {
-      fr: "+48 % en 5 ans, alors que l'entreprise vise la neutralité carbone en 2030. Elle attribue cette hausse à la consommation de ses centres de données. Microsoft a connu une hausse similaire (≈ +30 % depuis 2020).",
-      en: "+48% in 5 years, while the company aims for net zero by 2030. It attributes the rise to its data centres' energy use. Microsoft saw a similar rise (≈ +30% since 2020).",
-    },
-    source: { label: "Google Environmental Report 2024", url: "https://blog.google/company-news/outreach-and-initiatives/sustainability/2024-environmental-report/" },
-  },
-
-  // 🌍 Environnement : l'impact de NOS usages
-  {
-    id: "k_ranking",
-    type: "ranking",
-    prompt: {
-      fr: "Classe ces usages du plus au moins énergivore.",
-      en: "Rank these from most to least energy-hungry.",
-    },
-    topLabel: { fr: "Le plus énergivore", en: "Most energy" },
-    bottomLabel: { fr: "Le moins énergivore", en: "Least energy" },
-    items: [
-      { id: "email", emoji: "📧", label: { fr: "Envoyer un courriel", en: "Sending an email" } },
-      { id: "text", emoji: "💬", label: { fr: "Une réponse texte d'une IA", en: "One AI text answer" } },
-      { id: "video", emoji: "🎬", label: { fr: "Générer une courte vidéo IA", en: "Generating a short AI video" } },
-      { id: "image", emoji: "🖼️", label: { fr: "Générer une image IA", en: "Generating an AI image" } },
-    ],
-    correct: ["video", "image", "text", "email"],
-    explanation: {
-      fr: "Générer une image consomme en moyenne des dizaines de fois plus qu'une réponse texte, et une vidéo encore beaucoup plus. Les « tendances » virales (se transformer en figurine, en personnage animé…) représentent des millions de générations.",
-      en: "Generating an image uses tens of times more energy than a text answer on average, and a video far more still. Viral “trends” (turning yourself into a figurine, an anime character…) add up to millions of generations.",
-    },
-    source: { label: "Luccioni et al. (2024), Power Hungry Processing", url: "https://arxiv.org/abs/2311.16863" },
-  },
-
-  // 🌍 Environnement : l'eau
-  {
-    id: "k_water",
-    type: "single",
-    prompt: {
-      fr: "En un an, les centres de données de Google ont consommé environ 23 milliards de litres d'eau. Ça représente combien de piscines olympiques ?",
-      en: "In one year, Google's data centres used about 23 billion litres of water. How many Olympic swimming pools is that?",
-    },
-    options: [
-      { id: "a", emoji: "🏊", label: { fr: "≈ 90 piscines", en: "≈ 90 pools" } },
-      { id: "b", emoji: "🏊", label: { fr: "≈ 900 piscines", en: "≈ 900 pools" } },
-      { id: "c", emoji: "🏊", label: { fr: "≈ 9 000 piscines", en: "≈ 9,000 pools" } },
-    ],
-    correct: "c",
-    explanation: {
-      fr: "L'eau sert à refroidir les serveurs et s'évapore en grande partie. Des centres de données sont construits dans des régions déjà touchées par la sécheresse (Arizona, Chili, Uruguay…), en concurrence avec l'eau potable des habitants.",
-      en: "Water is used to cool servers and largely evaporates. Data centres are built in regions already hit by drought (Arizona, Chile, Uruguay…), competing with residents' drinking water.",
-    },
-    source: { label: "Google Environmental Report 2024", url: "https://blog.google/company-news/outreach-and-initiatives/sustainability/2024-environmental-report/" },
-  },
-
-  // 👥 Social / ⚖️ éthique : les deepfakes
-  {
-    id: "k_deepfakes",
+    id: "k_env_2_datacenter_share",
     type: "gauge",
     prompt: {
-      fr: "Quelle part des vidéos « deepfake » en ligne sont de la pornographie créée sans le consentement des personnes représentées ?",
-      en: "What share of “deepfake” videos online are pornography made without the consent of the people shown?",
+      fr: "En 2024, quelle part de la consommation mondiale d'électricité représentaient les centres de données, tous usages confondus ?",
+      en: "In 2024, what share of global electricity consumption did data centres account for, all uses combined?",
     },
     help: { fr: "Glisse le curseur", en: "Drag the slider" },
     min: 0,
     max: 100,
+    step: 0.5,
     unit: "%",
-    correct: 96,
-    tolerance: 30,
+    correct: 1.5,
+    tolerance: 5,
     explanation: {
-      fr: "≈ 96 %, visant presque uniquement des femmes. Aujourd'hui, une seule photo suffit et des élèves en sont victimes dans des écoles, y compris au Canada. Les deepfakes servent aussi à manipuler des élections et à arnaquer des proches.",
-      en: "≈ 96%, targeting almost exclusively women. Today a single photo is enough, and students have been targeted in schools, including in Canada. Deepfakes are also used to manipulate elections and scam relatives.",
+      fr: "Environ 1,5 %, soit 415 TWh. L'AIE projette environ 945 TWh en 2030, soit un peu plus que toute la consommation d'électricité actuelle du Japon. Les centres de données restent une petite part du total mondial, mais leur impact local est beaucoup plus marqué.",
+      en: "About 1.5%, or 415 TWh. The IEA projects about 945 TWh by 2030, slightly more than Japan's entire current electricity consumption. Data centres remain a small share of the global total, but their local impact is much more pronounced.",
     },
-    source: { label: "Deeptrace (2019), The State of Deepfakes", url: "https://regmedia.co.uk/2019/10/08/deepfake_report.pdf" },
+    source: {
+      label: "Agence internationale de l'énergie — Energy and AI (avril 2025)",
+      url: "https://www.iea.org/reports/energy-and-ai",
+    },
   },
 
-  // 💰 Économie : l'emploi
+  // Q3 · 👥 Société 1
   {
-    id: "k_jobs",
+    id: "k_soc_1_cv_bias",
     type: "single",
     prompt: {
-      fr: "Selon le FMI, quelle part des emplois est exposée à l'IA dans les économies avancées comme le Canada ?",
-      en: "According to the IMF, what share of jobs is exposed to AI in advanced economies like Canada?",
+      fr: "Pourquoi un outil d'IA de tri de CV, entraîné sur dix ans de candidatures reçues par une entreprise technologique, a-t-il défavorisé les candidatures de femmes ?",
+      en: "Why did an AI résumé-screening tool, trained on ten years of applications received by a tech company, penalize women's applications?",
     },
     options: [
-      { id: "a", label: { fr: "≈ 10 %", en: "≈ 10%" } },
-      { id: "b", label: { fr: "≈ 30 %", en: "≈ 30%" } },
-      { id: "c", label: { fr: "≈ 60 %", en: "≈ 60%" } },
-      { id: "d", label: { fr: "≈ 90 %", en: "≈ 90%" } },
+      {
+        id: "a",
+        label: {
+          fr: "Parce que l'algorithme calcule une réelle différence de compétence",
+          en: "Because the algorithm computes a real difference in competence",
+        },
+      },
+      {
+        id: "b",
+        label: {
+          fr: "Parce que le modèle a été entraîné sur des données historiques reflétant la sous-représentation passée des femmes dans ce domaine",
+          en: "Because the model was trained on historical data reflecting the past under-representation of women in the field",
+        },
+      },
+      {
+        id: "c",
+        label: {
+          fr: "Il s'agit d'un bug aléatoire sans lien avec les données",
+          en: "It was a random bug unrelated to the data",
+        },
+      },
     ],
-    correct: "c",
+    correct: "b",
     explanation: {
-      fr: "≈ 60 %. Pour environ la moitié d'entre eux, l'IA pourrait réduire la demande de travail et les salaires. Le FMI prévient que l'IA risque d'aggraver les inégalités, les gains allant surtout aux entreprises qui la contrôlent.",
-      en: "≈ 60%. For about half of them, AI could reduce labour demand and wages. The IMF warns that AI is likely to worsen inequality, with gains going mostly to the companies that control it.",
+      fr: "L'IA apprend des données passées, y compris de leurs déséquilibres. Chez Amazon, les CV d'entraînement venaient surtout d'hommes, et le système a pénalisé les CV contenant le mot « women's » ainsi que les diplômées de deux collèges de femmes. Le problème persiste : dans une étude de l'Université de Washington (2024), trois modèles de langage ont favorisé les noms associés aux personnes blanches dans 85 % des cas et les noms féminins dans seulement 11 % des cas. Amazon affirme que l'outil n'a jamais été utilisé par ses recruteurs pour évaluer des candidats, et l'étude de 2024 est une expérience en laboratoire sur des modèles open source.",
+      en: "AI learns from past data, including its imbalances. At Amazon, the training résumés came mostly from men, and the system penalized résumés containing the word “women's” as well as graduates of two women's colleges. The problem persists: in a University of Washington study (2024), three language models favoured names associated with white people in 85% of cases and female names in only 11% of cases. Amazon says the tool was never used by its recruiters to evaluate candidates, and the 2024 study is a lab experiment on open-source models.",
     },
-    source: { label: "FMI / IMF (2024), Gen-AI and the Future of Work", url: "https://www.imf.org/en/Publications/Staff-Discussion-Notes/Issues/2024/01/14/Gen-AI-Artificial-Intelligence-and-the-Future-of-Work-542379" },
+    source: [
+      {
+        label: "HRReporter (octobre 2018)",
+        url: "https://www.hrreporter.com/focus-areas/recruitment-and-staffing/amazon-scraps-secret-ai-recruiting-tool-that-showed-bias-against-women/287026",
+      },
+      {
+        label: "Université de Washington (octobre 2024)",
+        url: "https://www.washington.edu/news/2024/10/31/ai-bias-resume-screening-race-gender/",
+      },
+      { label: "AI Incident Database", url: "https://incidentdatabase.ai/reports/611/" },
+    ],
+  },
+
+  // Q4 · 👥 Société 2
+  {
+    id: "k_soc_2_privacy",
+    type: "single",
+    prompt: {
+      fr: "Les questions intimes ou de santé et les fichiers que vous partagez avec un assistant IA peuvent-ils être lus par des humains et servir à entraîner le modèle ?",
+      en: "Can the intimate or health questions and files you share with an AI assistant be read by humans and used to train the model?",
+    },
+    options: [
+      {
+        id: "a",
+        label: { fr: "Jamais, la loi interdit formellement tout accès humain", en: "Never, the law strictly forbids any human access" },
+      },
+      {
+        id: "b",
+        label: {
+          fr: "Oui, des sous-traitants humains analysent régulièrement des échantillons de requêtes pour évaluer et calibrer les modèles",
+          en: "Yes, human contractors regularly review samples of prompts to evaluate and calibrate the models",
+        },
+      },
+      {
+        id: "c",
+        label: { fr: "Uniquement si la police dispose d'un mandat judiciaire", en: "Only if the police have a court warrant" },
+      },
+    ],
+    correct: "b",
+    explanation: {
+      fr: "Oui, c'est possible, et souvent activé par défaut sur les versions grand public. Selon une analyse de Stanford, six développeurs américains majeurs semblent tous utiliser par défaut les conversations pour entraîner leurs modèles, et certains les conservent indéfiniment. Google indique aussi que des relecteurs humains lisent et annotent des conversations Gemini, après les avoir dissociées du compte. Les pratiques varient selon le fournisseur, l'offre et les réglages. Les chercheuses recommandent de désactiver l'utilisation des données pour l'entraînement quand l'option existe.",
+      en: "Yes, it is possible, and often enabled by default in consumer versions. According to a Stanford analysis, six major US developers all appear to use conversations by default to train their models, and some keep them indefinitely. Google also states that human reviewers read and annotate Gemini conversations after disconnecting them from the account. Practices vary by provider, plan and settings. The researchers recommend turning off the use of your data for training when the option exists.",
+    },
+    source: [
+      {
+        label: "Stanford — User Privacy and Large Language Models (2025)",
+        url: "https://cyberlaw.stanford.edu/publications/user-privacy-and-large-language-models-an-analysis-of-frontier-developers-privacy-policies/",
+      },
+      {
+        label: "Voicebot.ai — Google Warns Gemini Users The AI Automatically Saves Conversations",
+        url: "https://voicebot.ai/2024/02/12/google-warns-gemini-users-automatically-saves-conversations/",
+      },
+      {
+        label: "Stanford — Be Careful What You Tell Your AI Chatbot",
+        url: "https://cyberlaw.stanford.edu/press/be-careful-what-you-tell-your-ai-chatbot/",
+      },
+    ],
+  },
+
+  // Q5 · 💰 Économie 1
+  {
+    id: "k_eco_1_training_cost",
+    type: "estimate",
+    prompt: {
+      fr: "Combien a coûté en puissance de calcul l'entraînement de GPT-4 ?",
+      en: "How much did the computing power to train GPT-4 cost?",
+    },
+    help: { fr: "Estimation en dollars américains", en: "Estimate in US dollars" },
+    min: 100_000,
+    max: 10_000_000_000,
+    unit: { fr: "$ US", en: "USD" },
+    correct: 78_000_000,
+    comparison: {
+      fr: "et environ 191 millions $ US pour Gemini Ultra de Google",
+      en: "and about USD 191 million for Google's Gemini Ultra",
+    },
+    explanation: {
+      fr: "Environ 78 millions de dollars pour GPT-4, et environ 191 millions pour Gemini Ultra de Google. Le coût d'entraînement des modèles de pointe a progressé de 2 à 3 fois par an pendant huit ans. Ce sont des estimations qui ne couvrent que le calcul, sans les salaires de recherche.",
+      en: "About $78 million for GPT-4, and about $191 million for Google's Gemini Ultra. The cost of training frontier models has grown 2 to 3 times per year for eight years. These estimates cover compute only, not research salaries.",
+    },
+    source: {
+      label: "Epoch AI — How much does it cost to train frontier AI models?",
+      url: "https://epoch.ai/blog/how-much-does-it-cost-to-train-frontier-ai-models",
+    },
   },
 ];

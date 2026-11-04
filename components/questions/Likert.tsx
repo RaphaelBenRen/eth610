@@ -1,11 +1,44 @@
 "use client";
 
 import type { LikertQ } from "@/lib/types";
-import { useHotkeys, type QProps } from "./shared";
+import { Kbd, useHotkeys, type QProps } from "./shared";
 
 const FACES = ["😠", "🙁", "😐", "🙂", "😃"];
 
-export function Likert({ q, locale, answer, onAnswer }: QProps<LikertQ>) {
+export function Likert(props: QProps<LikertQ>) {
+  return props.q.labels?.length === 5 ? <LabeledLikert {...props} labels={props.q.labels} /> : <FacesLikert {...props} />;
+}
+
+/** 5 options en toutes lettres, de l'accord total (en haut / à gauche) au désaccord total. */
+function LabeledLikert({ q, locale, answer, onAnswer, labels }: QProps<LikertQ> & { labels: NonNullable<LikertQ["labels"]> }) {
+  const chosen = answer && "level" in answer ? answer.level : undefined;
+  const levels = [5, 4, 3, 2, 1];
+
+  useHotkeys((key) => {
+    const level = levels[Number(key) - 1];
+    if (level) onAnswer({ level });
+  });
+
+  return (
+    <div role="radiogroup" aria-label={q.prompt[locale]} className="grid gap-2 sm:grid-cols-5 sm:gap-3">
+      {levels.map((level, i) => (
+        <button
+          key={level}
+          type="button"
+          role="radio"
+          aria-checked={chosen === level}
+          className="choice min-h-12 py-2.5 sm:min-h-24 sm:flex-col sm:justify-center sm:px-2 sm:text-center sm:text-sm"
+          onClick={() => onAnswer({ level })}
+        >
+          <span className="flex-1 sm:w-full sm:flex-none sm:text-center">{labels[level - 1][locale]}</span>
+          <Kbd>{i + 1}</Kbd>
+        </button>
+      ))}
+    </div>
+  );
+}
+
+function FacesLikert({ q, locale, answer, onAnswer }: QProps<LikertQ>) {
   const chosen = answer && "level" in answer ? answer.level : undefined;
 
   useHotkeys((key) => {

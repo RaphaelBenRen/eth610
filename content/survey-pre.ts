@@ -1,93 +1,81 @@
-import type { Question } from "@/lib/types";
+import type { L, Question } from "@/lib/types";
 
 /*
- * Sondage 1 (« avant »). BROUILLON : à valider par l'équipe.
- * Les questions de REPEATED sont reposées à l'identique dans le sondage 2 (même `id`)
- * pour mesurer l'évolution de chaque répondant. Chacune touche une dimension :
- * environnementale, sociale, économique, éthique.
+ * Sondage 1 (« avant »), contenu final de l'équipe.
+ * Ordre : environnement, société, économie.
+ * Toutes ces questions sont reposées à l'identique dans le sondage 2 (même `id`)
+ * pour mesurer l'évolution de chaque répondant.
  */
 
-const agree = {
-  minLabel: { fr: "Pas du tout d'accord", en: "Strongly disagree" },
-  maxLabel: { fr: "Tout à fait d'accord", en: "Strongly agree" },
-};
+/** Libellés du niveau 1 (désaccord total) au niveau 5 (accord total). */
+const AGREE: L[] = [
+  { fr: "Tout à fait pas d'accord", en: "Strongly disagree" },
+  { fr: "Plutôt pas d'accord", en: "Somewhat disagree" },
+  { fr: "Ni d'accord, ni pas d'accord", en: "Neither agree nor disagree" },
+  { fr: "Plutôt d'accord", en: "Somewhat agree" },
+  { fr: "Tout à fait d'accord", en: "Strongly agree" },
+];
 
-export const usageFrequency: Question = {
-  id: "p_usage_freq",
-  type: "single",
-  prompt: {
-    fr: "À quelle fréquence utilises-tu des outils d'IA (assistants conversationnels, générateurs d'images, traduction…) ?",
-    en: "How often do you use AI tools (chat assistants, image generators, translation…)?",
-  },
-  options: [
-    { id: "never", label: { fr: "Jamais", en: "Never" } },
-    { id: "monthly", label: { fr: "Quelques fois par mois", en: "A few times a month" } },
-    { id: "weekly", label: { fr: "Quelques fois par semaine", en: "A few times a week" } },
-    { id: "daily", label: { fr: "Tous les jours", en: "Every day" } },
-    { id: "many_daily", label: { fr: "Plusieurs fois par jour", en: "Several times a day" } },
-  ],
-};
+const agree = { minLabel: AGREE[0], maxLabel: AGREE[4], labels: AGREE };
 
-/* Environnement */
-export const envImpact: Question = {
-  id: "q_env_impact",
-  type: "gauge",
-  prompt: {
-    fr: "Selon toi, quel est l'impact de l'IA sur l'environnement ?",
-    en: "In your opinion, how big is AI's impact on the environment?",
-  },
-  help: { fr: "Glisse le curseur", en: "Drag the slider" },
-  min: 0,
-  max: 100,
-  minLabel: { fr: "Négligeable", en: "Negligible" },
-  maxLabel: { fr: "Énorme", en: "Huge" },
-};
+const statement = (fr: string, en: string): L => ({ fr: `« ${fr} »`, en: `“${en}”` });
 
-/* Éthique : discriminations */
-export const fairness: Question = {
-  id: "q_fairness",
+/* 🌍 Environnement 1 */
+export const env1: Question = {
+  id: "s_env_1",
   type: "likert",
-  prompt: {
-    fr: "« Une IA est neutre : elle traite tout le monde de la même façon. »",
-    en: "“AI is neutral: it treats everyone the same way.”",
-  },
+  prompt: statement(
+    "Utiliser une IA de pointe (par exemple ChatGPT, Gemini ou Claude) pendant 2 heures par jour a un impact écologique négligeable.",
+    "Using a cutting-edge AI (for example ChatGPT, Gemini or Claude) for 2 hours a day has a negligible ecological impact.",
+  ),
   ...agree,
 };
 
-/* Social : travail humain caché */
-export const hiddenLabor: Question = {
-  id: "q_hidden_labor",
+/* 🌍 Environnement 2 */
+export const env2: Question = {
+  id: "s_env_2",
   type: "likert",
-  prompt: {
-    fr: "« L'IA fonctionne toute seule, sans travail humain derrière. »",
-    en: "“AI works on its own, with no human labour behind it.”",
-  },
+  prompt: statement(
+    "L'électricité et l'eau consommées par les centres de données (serveurs, refroidissement) qui font fonctionner l'IA ont un impact négatif très important sur l'environnement.",
+    "The electricity and water consumed by the data centres (servers, cooling) that run AI have a very significant negative impact on the environment.",
+  ),
   ...agree,
 };
 
-/* Économie */
-export const econBenefit: Question = {
-  id: "q_econ_benefit",
+/* 👥 Société 1 */
+export const soc1: Question = {
+  id: "s_soc_1",
   type: "likert",
-  prompt: {
-    fr: "« Les bénéfices de l'IA profiteront à tout le monde, pas seulement à quelques grandes entreprises. »",
-    en: "“The benefits of AI will reach everyone, not just a few big companies.”",
-  },
+  prompt: statement(
+    "Un algorithme d'IA est par nature plus objectif, neutre et équitable qu'un être humain pour prendre des décisions (recrutement, tri de candidatures, évaluation).",
+    "An AI algorithm is by nature more objective, neutral and fair than a human being at making decisions (hiring, screening applications, evaluation).",
+  ),
   ...agree,
 };
 
-/* Engagement personnel */
-export const changeHabit: Question = {
-  id: "q_change_habit",
+/* 👥 Société 2 */
+export const soc2: Question = {
+  id: "s_soc_2",
   type: "likert",
-  prompt: {
-    fr: "« Je suis prêt·e à changer ma façon d'utiliser l'IA pour limiter ses impacts négatifs. »",
-    en: "“I am willing to change how I use AI to limit its negative impacts.”",
-  },
+  prompt: statement(
+    "Les informations confidentielles ou personnelles que j'écris dans un prompt d'IA (données de santé, documents d'entreprise, messages privés) restent privées et ne servent pas à réentraîner le modèle.",
+    "The confidential or personal information I type into an AI prompt (health data, company documents, private messages) stays private and is not used to retrain the model.",
+  ),
+  ...agree,
+};
+
+/* 💰 Économie 1 */
+export const eco1: Question = {
+  id: "s_eco_1",
+  type: "likert",
+  prompt: statement(
+    "L'entraînement d'une IA de pointe, comparable à ChatGPT ou Gemini, est aujourd'hui assez abordable pour permettre à une petite ou moyenne entreprise de développer son propre modèle.",
+    "Training a cutting-edge AI, comparable to ChatGPT or Gemini, is now affordable enough for a small or medium-sized business to develop its own model.",
+  ),
   ...agree,
 };
 
 /** Questions reposées dans le sondage « après ». */
-export const REPEATED: Question[] = [envImpact, fairness, hiddenLabor, econBenefit, changeHabit];
+export const REPEATED: Question[] = [env1, env2, soc1, soc2, eco1];
 
-export const surveyPre: Question[] = [usageFrequency, ...REPEATED];
+export const surveyPre: Question[] = [...REPEATED];

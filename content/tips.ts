@@ -3,35 +3,35 @@ import type { L } from "@/lib/types";
 /* Conseils de l'écran final. BROUILLON : à valider par l'équipe. */
 export const tips: { emoji: string; title: L; text: L }[] = [
   {
-    emoji: "🤔",
-    title: { fr: "Se demander : ai-je vraiment besoin d'une IA ?", en: "Ask yourself: do I really need AI?" },
+    emoji: "🔢",
+    title: { fr: "Chaque requête compte", en: "Every prompt adds up" },
     text: {
-      fr: "Une recherche classique, un dictionnaire ou ta propre réflexion suffisent souvent, et consomment bien moins.",
-      en: "A regular search, a dictionary or your own thinking is often enough, and uses far less.",
+      fr: "Une requête consomme peu, mais des milliards de requêtes pèsent lourd. Une recherche classique ou ta propre réflexion suffisent souvent.",
+      en: "One prompt uses little, but billions of prompts weigh a lot. A regular search or your own thinking is often enough.",
     },
   },
   {
     emoji: "🖼️",
     title: { fr: "Éviter les générations « pour le fun »", en: "Skip “just for fun” generations" },
     text: {
-      fr: "Images et vidéos générées en boucle pour suivre une tendance ont un coût énergétique et en eau bien réel.",
-      en: "Images and videos generated over and over to follow a trend have a very real energy and water cost.",
+      fr: "Images et vidéos générées en boucle consomment bien plus d'énergie et d'eau qu'une réponse texte.",
+      en: "Images and videos generated over and over use far more energy and water than a text answer.",
     },
   },
   {
-    emoji: "🔍",
-    title: { fr: "Garder un esprit critique", en: "Stay critical" },
+    emoji: "⚖️",
+    title: { fr: "Une IA n'est pas neutre", en: "AI is not neutral" },
     text: {
-      fr: "Une IA n'est pas neutre : vérifie ses réponses, surtout quand elles concernent des personnes ou des groupes.",
-      en: "AI is not neutral: check its answers, especially when they concern people or groups.",
+      fr: "Elle reproduit les biais de ses données. Vérifie ses réponses, surtout quand elles concernent des personnes.",
+      en: "It reproduces the biases in its data. Check its answers, especially when they concern people.",
     },
   },
   {
-    emoji: "🎨",
-    title: { fr: "Respecter le travail des autres", en: "Respect other people's work" },
+    emoji: "🔒",
+    title: { fr: "Protéger tes données", en: "Protect your data" },
     text: {
-      fr: "Soutiens les artistes et créateurs humains ; ne génère pas d'images de vraies personnes sans leur accord.",
-      en: "Support human artists and creators; never generate images of real people without their consent.",
+      fr: "Ne partage pas d'informations de santé, privées ou confidentielles, et désactive l'utilisation de tes conversations pour l'entraînement dans les réglages.",
+      en: "Don't share health, private or confidential information, and turn off the use of your conversations for training in the settings.",
     },
   },
   {
