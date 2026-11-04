@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { EndScreen } from "@/components/EndScreen";
+import { Photo } from "@/components/Photo";
 import { tips } from "@/content/tips";
 import { isLocale } from "@/lib/types";
 import { getDict } from "@/messages";
@@ -11,7 +12,11 @@ export default async function MerciPage({ params }: PageProps<"/[lang]/merci">) 
 
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-6 md:py-14">
-      <h1 className="text-3xl font-extrabold tracking-tight text-balance sm:text-4xl">{t.end.title}</h1>
+      <Photo name="sunset-lines" className="rounded-3xl" overlay="bottom" priority sizes="(min-width: 896px) 896px, 100vw">
+        <div className="relative flex min-h-48 items-end p-6 sm:min-h-64 sm:p-10">
+          <h1 className="text-3xl font-extrabold tracking-tight text-balance text-white sm:text-4xl">{t.end.title}</h1>
+        </div>
+      </Photo>
       <EndScreen locale={lang} t={t} />
       <p className="mt-8 text-lg font-semibold">{t.end.subtitle}</p>
       <ul className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">

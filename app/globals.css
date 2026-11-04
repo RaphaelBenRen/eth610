@@ -191,3 +191,18 @@ body {
   --color-div-mid: var(--div-mid);
   --color-div-down: var(--div-down);
 }
+
+/* Ambiance « quiz » : la couleur principale passe au orange profond pendant le quiz.
+   (Les utilitaires bg-brand, text-brand… lisent var(--brand), donc il suffit de la redéfinir ici.) */
+.theme-quiz {
+  --brand: #c2410c;
+  --brand-ink: #ffffff;
+  --brand-soft: #fde7d9;
+}
+@media (prefers-color-scheme: dark) {
+  .theme-quiz {
+    --brand: #fb923c;
+    --brand-ink: #1c0f05;
+    --brand-soft: #3b2214;
+  }
+}

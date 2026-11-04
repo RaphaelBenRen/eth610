@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { FunnelChart, Kpis, LogoutButton, PrePostSection, QuestionsSection } from "@/components/admin/Dashboard";
+import { Kpis, LogoutButton, PrePostSection, QuestionsSection } from "@/components/admin/Dashboard";
 import { CONTENT_VERSION } from "@/content";
 import { ADMIN_COOKIE, verifyAdminToken } from "@/lib/admin-auth";
 import { getStore, usingSupabase } from "@/lib/db";
@@ -44,9 +44,6 @@ export default async function AdminPage() {
       <h2 className="mt-12 text-xl font-bold">Détail par question</h2>
       <QuestionsSection questions={stats.questions} />
 
-      <h2 className="mt-12 text-xl font-bold">Entonnoir d&apos;abandon</h2>
-      <p className="mt-1 text-sm text-muted">Nombre de sessions ayant répondu à chaque étape.</p>
-      <FunnelChart funnel={stats.funnel} />
     </div>
   );
 }

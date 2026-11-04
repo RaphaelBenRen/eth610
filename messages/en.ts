@@ -29,6 +29,8 @@ export const en: Dict = {
     validate: "Submit",
     next: "Next",
     finish: "See results",
+    yourOpinion: "Your opinion",
+    dims: { env: "Environment", soc: "Society", eco: "Economy" },
     postHint: "Has your opinion changed?",
     multiHint: "Select all that apply",
     true: "True",

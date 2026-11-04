@@ -13,11 +13,17 @@ export const PHASES: Phase[] = ["pre", "quiz", "post"];
 
 export type Option = { id: string; label: L; emoji?: string };
 
+export type Dimension = "env" | "soc" | "eco";
+
 type Base = {
   /** Identifiant stable : ne jamais le changer une fois le site en ligne (sinon les stats sont cassées). */
   id: string;
   prompt: L;
   help?: L;
+  /** Thème affiché en étiquette : environnement, société, économie. */
+  dimension?: Dimension;
+  /** Photo d'illustration : nom du fichier dans public/images (sans .jpg), crédit dans content/image-credits.ts. */
+  image?: string;
 };
 
 export type Source = { label: string; url: string };

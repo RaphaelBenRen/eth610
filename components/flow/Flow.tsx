@@ -10,6 +10,7 @@ import { isBrowser, useHydrated } from "@/lib/client/useHydrated";
 import { score as scoreOf } from "@/lib/scoring";
 import type { AnswerValue, Locale, Phase, Question } from "@/lib/types";
 import type { Dict } from "@/messages";
+import { Photo } from "../Photo";
 import { QuestionView } from "../questions/QuestionView";
 import { useHotkeys } from "../questions/shared";
 import { Feedback } from "./Feedback";
@@ -134,8 +135,13 @@ export function Flow({ locale, t }: { locale: Locale; t: Dict }) {
   const phase: Phase = screen.kind === "q" ? screen.phase : screen.to;
   const frac = screen.kind === "q" ? screen.i / screen.n : 0;
 
+  const isQuiz = screen.kind === "q" ? screen.phase === "quiz" : screen.to === "quiz";
+  const questionKey = screen.kind === "q" ? keyOf(screen.phase, screen.q.id) : "";
+
   return (
-    <div className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-4 pb-8 sm:px-6">
+    <div
+      className={`mx-auto flex w-full flex-1 flex-col px-4 pb-8 sm:px-6 ${isQuiz ? "theme-quiz max-w-5xl" : "max-w-2xl"}`}
+    >
       <div className="sticky top-0 z-20 -mx-4 bg-bg/90 px-4 pt-3 pb-3 backdrop-blur sm:-mx-6 sm:px-6">
         <Progress t={t} phase={phase} fracInPhase={frac} />
       </div>
@@ -147,38 +153,29 @@ export function Flow({ locale, t }: { locale: Locale; t: Dict }) {
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -24 }}
           transition={{ duration: 0.22, ease: "easeOut" }}
-          className="mt-4 flex-1 md:mt-8 md:rounded-3xl md:border md:border-line md:bg-surface md:p-10 md:shadow-sm"
+          className="mt-3 flex-1 md:mt-6"
         >
           {screen.kind === "break" ? (
             <BreakScreen t={t} to={screen.to} scores={state.scores} onNext={() => advanceFrom(state.index)} />
+          ) : screen.phase === "quiz" ? (
+            <QuizScreen
+              screen={screen}
+              locale={locale}
+              t={t}
+              scores={state.scores}
+              answer={state.answers[questionKey]}
+              revealed={state.revealed}
+              onAnswer={onAnswer}
+              onNext={() => advanceFrom(state.index)}
+            />
           ) : (
-            <>
-              <p className="text-sm font-medium text-muted">
-                {t.flow.question} {screen.i + 1} {t.flow.of} {screen.n}
-                {screen.phase === "post" && <span className="ml-2 text-accent">· {t.flow.postHint}</span>}
-              </p>
-              <h1 className="mt-2 text-xl leading-snug font-bold text-balance sm:text-2xl">{screen.q.prompt[locale]}</h1>
-              {screen.q.help && <p className="mt-1 text-sm text-muted">{screen.q.help[locale]}</p>}
-              <div className="mt-6">
-                <QuestionView
-                  q={screen.q}
-                  locale={locale}
-                  t={t}
-                  answer={state.answers[keyOf(screen.phase, screen.q.id)]}
-                  revealed={state.revealed}
-                  onAnswer={onAnswer}
-                />
-              </div>
-              {state.revealed && (
-                <Feedback
-                  q={screen.q}
-                  score={state.scores[keyOf("quiz", screen.q.id)] ?? 0}
-                  locale={locale}
-                  t={t}
-                  onNext={() => advanceFrom(state.index)}
-                />
-              )}
-            </>
+            <SurveyScreen
+              screen={screen}
+              locale={locale}
+              t={t}
+              answer={state.answers[questionKey]}
+              onAnswer={onAnswer}
+            />
           )}
         </motion.section>
       </AnimatePresence>
@@ -194,6 +191,134 @@ export function Flow({ locale, t }: { locale: Locale; t: Dict }) {
   );
 }
 
+type QScreen = Extract<Screen, { kind: "q" }>;
+
+const DIM_EMOJI = { env: "🌍", soc: "👥", eco: "💰" } as const;
+
+function DimChip({ q, t, className = "" }: { q: Question; t: Dict; className?: string }) {
+  if (!q.dimension) return null;
+  return (
+    <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ${className}`}>
+      <span aria-hidden>{DIM_EMOJI[q.dimension]}</span>
+      {t.flow.dims[q.dimension]}
+    </span>
+  );
+}
+
+/** Sondage : grande citation sur fond clair, photo en bandeau. */
+function SurveyScreen({
+  screen,
+  locale,
+  t,
+  answer,
+  onAnswer,
+}: {
+  screen: QScreen;
+  locale: Locale;
+  t: Dict;
+  answer?: AnswerValue;
+  onAnswer: (v: AnswerValue) => void;
+}) {
+  const { q } = screen;
+  return (
+    <div className="overflow-hidden rounded-3xl border border-line bg-surface shadow-sm">
+      {q.image && (
+        <Photo name={q.image} className="aspect-[16/5]" sizes="(min-width: 768px) 672px, 100vw" overlay="bottom" priority>
+          <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 p-4 pb-5">
+            <DimChip q={q} t={t} className="bg-white/90 text-ink" />
+            <span className="rounded-full bg-black/40 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur">
+              {screen.i + 1} / {screen.n}
+            </span>
+          </div>
+        </Photo>
+      )}
+      <div className="p-5 sm:p-8">
+        <p className="text-xs font-bold tracking-widest text-brand uppercase">
+          {t.flow.yourOpinion}
+          {screen.phase === "post" && <span className="ml-2 tracking-normal text-accent normal-case">· {t.flow.postHint}</span>}
+        </p>
+        <h1 className="relative mt-3 pl-5 text-lg leading-snug font-semibold text-balance sm:text-xl">
+          <span aria-hidden className="absolute top-0 bottom-0 left-0 w-1 rounded-full bg-brand" />
+          {q.prompt[locale]}
+        </h1>
+        {q.help && <p className="mt-1 text-sm text-muted">{q.help[locale]}</p>}
+        <div className="mt-6">
+          <QuestionView q={q} locale={locale} t={t} answer={answer} revealed={false} onAnswer={onAnswer} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Quiz : ambiance « jeu » (orange), photo à gauche sur grand écran, score en direct. */
+function QuizScreen({
+  screen,
+  locale,
+  t,
+  scores,
+  answer,
+  revealed,
+  onAnswer,
+  onNext,
+}: {
+  screen: QScreen;
+  locale: Locale;
+  t: Dict;
+  scores: Record<string, number>;
+  answer?: AnswerValue;
+  revealed: boolean;
+  onAnswer: (v: AnswerValue) => void;
+  onNext: () => void;
+}) {
+  const { q } = screen;
+  return (
+    <div className="grid gap-3 lg:grid-cols-[2fr_3fr] lg:items-start lg:gap-6">
+      {q.image && (
+        <Photo
+          name={q.image}
+          className="aspect-[16/7] rounded-3xl lg:sticky lg:top-24 lg:aspect-auto lg:h-[min(34rem,calc(100dvh-8rem))]"
+          sizes="(min-width: 1024px) 400px, 100vw"
+          overlay="bottom"
+          priority
+        >
+          <div className="absolute inset-x-0 bottom-0 flex flex-wrap items-end gap-2 p-4 pb-5 lg:p-6 lg:pb-8">
+            <span className="rounded-full bg-brand px-3 py-1 text-xs font-bold tracking-wide text-brand-ink uppercase">
+              Quiz · {screen.i + 1}/{screen.n}
+            </span>
+            <DimChip q={q} t={t} className="bg-white/90 text-ink" />
+          </div>
+        </Photo>
+      )}
+      <div className="rounded-3xl border border-line bg-surface p-5 shadow-sm sm:p-8">
+        <ScoreDots scores={scores} current={screen.i} />
+        <h1 className="mt-4 text-xl leading-snug font-bold text-balance sm:text-2xl">{q.prompt[locale]}</h1>
+        {q.help && <p className="mt-1 text-sm text-muted">{q.help[locale]}</p>}
+        <div className="mt-6">
+          <QuestionView q={q} locale={locale} t={t} answer={answer} revealed={revealed} onAnswer={onAnswer} />
+        </div>
+        {revealed && <Feedback q={q} score={scores[keyOf("quiz", q.id)] ?? 0} locale={locale} t={t} onNext={onNext} />}
+      </div>
+    </div>
+  );
+}
+
+/** Une pastille par question du quiz : verte (juste), orange (pas loin), rouge (raté), creuse (à venir). */
+function ScoreDots({ scores, current }: { scores: Record<string, number>; current: number }) {
+  return (
+    <div className="flex items-center gap-1.5" aria-hidden>
+      {CONTENT.quiz.map((q, i) => {
+        const s = scores[keyOf("quiz", q.id)];
+        const color =
+          s === undefined ? (i === current ? "border-2 border-brand" : "border-2 border-line") : s >= 0.8 ? "bg-good" : s >= 0.4 ? "bg-warn" : "bg-bad";
+        return <span key={q.id} className={`h-2.5 rounded-full transition-all ${i === current ? "w-7" : "w-2.5"} ${color}`} />;
+      })}
+    </div>
+  );
+}
+
+const BREAK_IMAGE = { quiz: "servers-corridor", post: "bulbs" } as const;
+
+/** Écran de transition plein cadre, sur photo. */
 function BreakScreen({
   t,
   to,
@@ -208,18 +333,20 @@ function BreakScreen({
   const b = t.flow.breaks[to];
   const correct = countCorrect(scores);
   return (
-    <div className="flex flex-col items-center py-10 text-center md:py-6">
-      <div className="text-6xl" aria-hidden>{b.emoji}</div>
-      <h1 className="mt-4 text-2xl font-bold sm:text-3xl">{b.title}</h1>
-      {to === "post" && (
-        <p className="mt-4 rounded-2xl bg-brand-soft px-5 py-3 text-lg">
-          {t.flow.score} <strong>{correct} / {CONTENT.quiz.length}</strong>
-        </p>
-      )}
-      <p className="mt-4 max-w-md text-muted">{b.text.replace("{n}", String(CONTENT.quiz.length))}</p>
-      <button type="button" className="btn btn-primary mt-8 w-full sm:w-auto" onClick={onNext} autoFocus>
-        {b.cta} →
-      </button>
-    </div>
+    <Photo name={BREAK_IMAGE[to]} className="min-h-[28rem] rounded-3xl md:min-h-[32rem]" overlay="full" priority>
+      <div className="relative flex min-h-[28rem] flex-col items-center justify-center px-6 py-12 text-center text-white md:min-h-[32rem]">
+        <div className="text-6xl" aria-hidden>{b.emoji}</div>
+        <h1 className="mt-4 text-3xl font-extrabold sm:text-4xl">{b.title}</h1>
+        {to === "post" && (
+          <p className="mt-5 rounded-2xl bg-white/15 px-5 py-3 text-lg backdrop-blur">
+            {t.flow.score} <strong>{correct} / {CONTENT.quiz.length}</strong>
+          </p>
+        )}
+        <p className="mt-4 max-w-md text-white/85">{b.text.replace("{n}", String(CONTENT.quiz.length))}</p>
+        <button type="button" className="btn btn-primary mt-8 w-full sm:w-auto" onClick={onNext} autoFocus>
+          {b.cta} →
+        </button>
+      </div>
+    </Photo>
   );
 }

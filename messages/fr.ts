@@ -27,6 +27,8 @@ export const fr = {
     validate: "Valider",
     next: "Suivant",
     finish: "Voir les résultats",
+    yourOpinion: "Ton avis",
+    dims: { env: "Environnement", soc: "Société", eco: "Économie" },
     postHint: "Ton avis a-t-il changé ?",
     multiHint: "Plusieurs choix possibles",
     true: "Vrai",

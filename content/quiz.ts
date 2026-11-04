@@ -11,6 +11,8 @@ export const quiz: Question[] = [
   {
     id: "k_env_1_prompt_energy",
     type: "estimate",
+    dimension: "env",
+    image: "bulb",
     prompt: {
       fr: "Quelle quantité d'énergie consomme une requête texte « médiane » de Gemini, en wattheures (Wh) ?",
       en: "How much energy does a “median” Gemini text prompt use, in watt-hours (Wh)?",
@@ -37,6 +39,8 @@ export const quiz: Question[] = [
   {
     id: "k_env_2_datacenter_share",
     type: "gauge",
+    dimension: "env",
+    image: "powerlines",
     prompt: {
       fr: "En 2024, quelle part de la consommation mondiale d'électricité représentaient les centres de données, tous usages confondus ?",
       en: "In 2024, what share of global electricity consumption did data centres account for, all uses combined?",
@@ -62,6 +66,8 @@ export const quiz: Question[] = [
   {
     id: "k_soc_1_cv_bias",
     type: "single",
+    dimension: "soc",
+    image: "interview-woman",
     prompt: {
       fr: "Pourquoi un outil d'IA de tri de CV, entraîné sur dix ans de candidatures reçues par une entreprise technologique, a-t-il défavorisé les candidatures de femmes ?",
       en: "Why did an AI résumé-screening tool, trained on ten years of applications received by a tech company, penalize women's applications?",
@@ -111,6 +117,8 @@ export const quiz: Question[] = [
   {
     id: "k_soc_2_privacy",
     type: "single",
+    dimension: "soc",
+    image: "cameras",
     prompt: {
       fr: "Les questions intimes ou de santé et les fichiers que vous partagez avec un assistant IA peuvent-ils être lus par des humains et servir à entraîner le modèle ?",
       en: "Can the intimate or health questions and files you share with an AI assistant be read by humans and used to train the model?",
@@ -157,6 +165,8 @@ export const quiz: Question[] = [
   {
     id: "k_eco_1_training_cost",
     type: "estimate",
+    dimension: "eco",
+    image: "gpu",
     prompt: {
       fr: "Combien a coûté en puissance de calcul l'entraînement de GPT-4 ?",
       en: "How much did the computing power to train GPT-4 cost?",

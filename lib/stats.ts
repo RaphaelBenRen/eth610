@@ -51,7 +51,6 @@ export type Stats = {
   };
   prePost: PrePost[];
   questions: QuestionStats[];
-  funnel: { label: string; n: number }[];
 };
 
 function histogram(q: Question, values: number[]): Bar[] {
@@ -243,17 +242,5 @@ export function computeStats(sessions: SessionRow[], answers: AnswerRow[]): Stat
     });
   }
 
-  // Entonnoir : nombre de sessions ayant répondu à chaque question, dans l'ordre du parcours.
-  const funnel = [
-    { label: "Sessions démarrées", n: sessions.length },
-    ...PHASES.flatMap((phase) =>
-      CONTENT[phase].map((q, i) => ({
-        label: `${phase === "pre" ? "Sondage 1" : phase === "quiz" ? "Quiz" : "Sondage 2"} · Q${i + 1}`,
-        n: new Set((byQ.get(`${phase}:${q.id}`) ?? []).map((a) => a.session_id)).size,
-      })),
-    ),
-    { label: "Terminé", n: completed.length },
-  ];
-
-  return { kpis, prePost, questions, funnel };
+  return { kpis, prePost, questions };
 }

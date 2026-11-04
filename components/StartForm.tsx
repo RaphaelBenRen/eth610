@@ -21,7 +21,7 @@ export function StartForm({ locale, t }: { locale: Locale; t: Dict }) {
 
   return (
     <form
-      className="mt-4 sm:mt-5"
+      className="sm:mt-5"
       onSubmit={(e) => {
         e.preventDefault();
         if (consent) start(true);

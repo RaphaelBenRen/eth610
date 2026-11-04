@@ -6,7 +6,8 @@ import type { Bar, PrePost, QuestionStats, Stats } from "@/lib/stats";
 import type { Phase } from "@/lib/types";
 
 const pct = (x: number | null, digits = 0) => (x === null ? "—" : `${(x * 100).toFixed(digits)} %`);
-const num = (x: number, digits = 1) => x.toLocaleString("fr-CA", { maximumFractionDigits: digits });
+const num = (x: number, digits = 1) =>
+  x.toLocaleString("fr-CA", Math.abs(x) > 0 && Math.abs(x) < 1 ? { maximumSignificantDigits: 2 } : { maximumFractionDigits: digits });
 
 const TYPE_LABEL: Record<string, string> = {
   single: "QCM",
@@ -299,26 +300,5 @@ export function QuestionsSection({ questions }: { questions: QuestionStats[] }) 
           ))}
       </div>
     </>
-  );
-}
-
-/* ---------- Entonnoir ---------- */
-
-export function FunnelChart({ funnel }: { funnel: Stats["funnel"] }) {
-  const max = Math.max(1, funnel[0]?.n ?? 1);
-  return (
-    <div className="mt-4 rounded-2xl border border-line bg-surface p-5">
-      <ul className="grid gap-1">
-        {funnel.map((f) => (
-          <li key={f.label} className="grid grid-cols-[8.5rem_1fr_3rem] items-center gap-3 text-sm sm:grid-cols-[10rem_1fr_4rem]">
-            <span className="truncate text-muted">{f.label}</span>
-            <span className="h-3" title={`${f.label} : ${f.n}`}>
-              <span className="block h-full rounded-r-sm bg-series-1" style={{ width: `${(f.n / max) * 100}%` }} />
-            </span>
-            <span className="text-right tabular-nums">{f.n}</span>
-          </li>
-        ))}
-      </ul>
-    </div>
   );
 }
