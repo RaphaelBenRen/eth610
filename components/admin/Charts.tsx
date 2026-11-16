@@ -1,5 +1,7 @@
 "use client";
 
+import { useState } from "react";
+
 import type { PrePost, QuestionStats, Stats } from "@/lib/stats";
 import type { Question } from "@/lib/types";
 
@@ -45,91 +47,192 @@ export function Headline({ kpis, quiz }: { kpis: Stats["kpis"]; quiz: QuestionSt
   );
 }
 
-/* ---------- 2. Vue d'ensemble : flèche avant → après par affirmation ---------- */
+/* ---------- 2. Vue d'ensemble : courbe « avant » et courbe « après » ---------- */
 
-export function ShiftChart({ items }: { items: PrePost[] }) {
+/** Coupe un libellé en lignes courtes pour l'axe des abscisses. */
+function wrap(text: string, max = 17, maxLines = 3) {
+  const lines: string[] = [];
+  let cur = "";
+  for (const w of text.split(" ")) {
+    if ((cur + " " + w).trim().length > max && cur) {
+      lines.push(cur);
+      cur = w;
+    } else cur = (cur + " " + w).trim();
+  }
+  if (cur) lines.push(cur);
+  if (lines.length > maxLines) lines.splice(maxLines - 1, lines.length, lines.slice(maxLines - 1).join(" "));
+  return lines;
+}
+
+const W = 920;
+const H = 430;
+const M = { top: 28, right: 28, bottom: 132, left: 168 };
+const PW = W - M.left - M.right;
+const PH = H - M.top - M.bottom;
+const yOf = (v: number) => M.top + ((5 - v) / 4) * PH;
+
+const SERIES = [
+  { key: "pre" as const, label: "Avant le quiz", color: "var(--series-2)" },
+  { key: "post" as const, label: "Après le quiz", color: "var(--series-1)" },
+];
+
+export function EvolutionChart({ items }: { items: PrePost[] }) {
   const rows = items.filter((p) => p.n > 0 && p.q.type === "likert");
+  const [hover, setHover] = useState<number | null>(null);
   if (!rows.length) return <Empty />;
-  const pos = (v: number) => ((v - 1) / 4) * 100;
+
+  const xOf = (i: number) => M.left + (PW * (i + 0.5)) / rows.length;
+  const colW = PW / rows.length;
+  const path = (key: "pre" | "post") =>
+    rows.map((p, i) => `${i ? "L" : "M"}${xOf(i).toFixed(1)},${yOf(key === "pre" ? p.meanPre : p.meanPost).toFixed(1)}`).join(" ");
+  const h = hover !== null ? rows[hover] : null;
+  // Info-bulle au-dessus du point le plus haut s'il reste de la place, sinon sous le point le plus bas.
+  const yHigh = h ? yOf(Math.max(h.meanPre, h.meanPost)) : 0;
+  const yLow = h ? yOf(Math.min(h.meanPre, h.meanPost)) : 0;
+  const tipAbove = yHigh > 135;
+  const tipY = tipAbove ? yHigh - 14 : yLow + 14;
+
+  /** Colonne sous le pointeur (souris ou doigt), calculée depuis sa position dans le graphique. */
+  const pick = (e: React.PointerEvent<SVGSVGElement>) => {
+    const box = e.currentTarget.getBoundingClientRect();
+    const x = ((e.clientX - box.left) / box.width) * W;
+    const i = Math.floor((x - M.left) / colW);
+    setHover(i >= 0 && i < rows.length ? i : null);
+  };
 
   return (
     <div className="mt-4 rounded-3xl border border-line bg-surface p-5 sm:p-8">
-      <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm text-muted">
-        <span className="inline-flex items-center gap-2">
-          <span className="h-3.5 w-3.5 rounded-full border-2 border-muted bg-surface" aria-hidden /> Avant le quiz (moyenne)
-        </span>
-        <span className="inline-flex items-center gap-2">
-          <span className="h-3.5 w-3.5 rounded-full bg-ink" aria-hidden /> Après le quiz (moyenne)
-        </span>
-        <span className="inline-flex items-center gap-2">
-          <span className="h-1 w-5 rounded-full bg-good" aria-hidden /> ✓ évolution dans le sens attendu
-        </span>
+      {/* Légende */}
+      <div className="flex flex-wrap gap-x-6 gap-y-1 text-sm font-medium">
+        {SERIES.map((s) => (
+          <span key={s.key} className="inline-flex items-center gap-2">
+            <svg width="28" height="12" aria-hidden>
+              <line x1="0" y1="6" x2="28" y2="6" stroke={s.color} strokeWidth="2.5" />
+              <circle cx="14" cy="6" r="4.5" fill={s.color} stroke="var(--surface)" strokeWidth="2" />
+            </svg>
+            {s.label}
+          </span>
+        ))}
+        <span className="text-muted">· Accord moyen, de 1 (pas du tout d&apos;accord) à 5 (tout à fait d&apos;accord)</span>
       </div>
 
-      <ul className="mt-6 grid gap-5">
-        {rows.map((p) => {
-          const delta = p.meanPost - p.meanPre;
-          const good = p.expected ? (p.expected === "agree" ? delta > 0 : delta < 0) : false;
-          const [lo, hi] = [Math.min(p.meanPre, p.meanPost), Math.max(p.meanPre, p.meanPost)];
-          const rightward = p.meanPost >= p.meanPre;
-          return (
-            <li key={p.q.id} className="grid gap-x-6 gap-y-2 md:grid-cols-[minmax(0,15rem)_1fr_6.5rem] md:items-center">
-              <div className="text-sm leading-snug font-semibold md:text-base">
-                <span aria-hidden>{dimEmoji(p.q)} </span>
-                {shortOf(p.q)}
-              </div>
-              <div
-                className="relative h-8"
-                title={`${shortOf(p.q)} — avant ${p.meanPre.toFixed(2)} → après ${p.meanPost.toFixed(2)} (n = ${p.n})`}
-              >
-                {/* Repères 1 à 5 */}
-                {[1, 2, 3, 4, 5].map((l) => (
-                  <span key={l} className="absolute top-1/2 h-3 w-px -translate-y-1/2 bg-line" style={{ left: `${pos(l)}%` }} />
-                ))}
-                <span className="absolute top-1/2 right-0 left-0 h-px -translate-y-1/2 bg-line" />
-                {/* Trait avant → après */}
-                <span
-                  className={`absolute top-1/2 h-1 -translate-y-1/2 rounded-full ${good ? "bg-good" : "bg-muted/50"}`}
-                  style={{ left: `${pos(lo)}%`, width: `${pos(hi) - pos(lo)}%` }}
-                />
-                {/* Pointe de flèche côté « après » */}
-                {hi - lo > 0.05 && (
-                  <span
-                    className={`absolute top-1/2 h-0 w-0 -translate-y-1/2 border-y-[6px] border-y-transparent ${
-                      rightward ? `border-l-[8px] ${good ? "border-l-good" : "border-l-muted"}` : `border-r-[8px] ${good ? "border-r-good" : "border-r-muted"}`
-                    }`}
-                    style={rightward ? { left: `calc(${pos(p.meanPost)}% - 14px)` } : { left: `calc(${pos(p.meanPost)}% + 6px)` }}
-                    aria-hidden
-                  />
-                )}
-                <span
-                  className="absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 border-muted bg-surface"
-                  style={{ left: `${pos(p.meanPre)}%` }}
-                />
-                <span
-                  className="absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full bg-ink ring-2 ring-surface"
-                  style={{ left: `${pos(p.meanPost)}%` }}
-                />
-              </div>
-              <div className="flex items-baseline gap-2 md:justify-end">
-                <span className="text-lg font-bold tabular-nums">{signed(delta)}</span>
-                {p.expected && (
-                  <span className={`text-xs font-semibold ${good ? "text-good" : "text-muted"}`}>
-                    {good ? "✓ attendu" : Math.abs(delta) < 0.05 ? "stable" : "sens inverse"}
-                  </span>
-                )}
-              </div>
-            </li>
-          );
-        })}
-      </ul>
+      <div className="-mx-2 mt-4 overflow-x-auto px-2">
+        <div className="relative min-w-[640px]">
+          <svg
+            viewBox={`0 0 ${W} ${H}`}
+            className="block w-full touch-pan-y"
+            role="img"
+            aria-label="Accord moyen avant et après le quiz, par affirmation"
+            onPointerMove={pick}
+            onPointerDown={pick}
+            onPointerLeave={() => setHover(null)}
+          >
+            {/* Grille horizontale + graduations de l'axe Y */}
+            {[1, 2, 3, 4, 5].map((v) => (
+              <g key={v}>
+                <line x1={M.left} x2={W - M.right} y1={yOf(v)} y2={yOf(v)} stroke="var(--line)" strokeWidth={v === 3 ? 1.5 : 1} />
+                <text x={M.left - 12} y={yOf(v)} textAnchor="end" dominantBaseline="middle" className="fill-muted text-[13px]">
+                  {v === 1 ? "1 · Pas du tout d'accord" : v === 3 ? "3 · Neutre" : v === 5 ? "5 · Tout à fait d'accord" : v}
+                </text>
+              </g>
+            ))}
 
-      <div className="mt-4 grid md:grid-cols-[minmax(0,15rem)_1fr_6.5rem] md:gap-x-6">
-        <span className="hidden md:block" />
-        <div className="flex justify-between text-xs text-muted">
-          <span>1 · Pas du tout d&apos;accord</span>
-          <span>3 · Neutre</span>
-          <span>5 · Tout à fait d&apos;accord</span>
+            {/* Colonne survolée */}
+            {hover !== null && <rect x={xOf(hover) - colW / 2} y={M.top} width={colW} height={PH} fill="var(--surface-2)" />}
+            {hover !== null && <line x1={xOf(hover)} x2={xOf(hover)} y1={M.top} y2={M.top + PH} stroke="var(--muted)" strokeWidth="1" />}
+
+            {/* Zone entre les deux courbes */}
+            <path
+              d={`${path("pre")} ${rows
+                .map((p, i) => `L${xOf(rows.length - 1 - i).toFixed(1)},${yOf(rows[rows.length - 1 - i].meanPost).toFixed(1)}`)
+                .join(" ")} Z`}
+              fill="var(--series-1)"
+              opacity="0.07"
+            />
+
+            {/* Courbes */}
+            {SERIES.map((s) => (
+              <path key={s.key} d={path(s.key)} fill="none" stroke={s.color} strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+            ))}
+            {SERIES.map((s) =>
+              rows.map((p, i) => (
+                <circle
+                  key={`${s.key}-${p.q.id}`}
+                  cx={xOf(i)}
+                  cy={yOf(s.key === "pre" ? p.meanPre : p.meanPost)}
+                  r={hover === i ? 7 : 5.5}
+                  fill={s.color}
+                  stroke="var(--surface)"
+                  strokeWidth="2"
+                />
+              )),
+            )}
+
+            {/* Étiquettes directes en bout de courbe */}
+            {SERIES.map((s) => {
+              const last = rows[rows.length - 1];
+              const v = s.key === "pre" ? last.meanPre : last.meanPost;
+              const other = s.key === "pre" ? last.meanPost : last.meanPre;
+              const dy = Math.abs(v - other) < 0.25 ? (v >= other ? -12 : 12) : 0;
+              return (
+                <text key={s.key} x={xOf(rows.length - 1) + 12} y={yOf(v) + dy} dominantBaseline="middle" className="fill-ink text-[12px] font-semibold">
+                  {s.key === "pre" ? "Avant" : "Après"}
+                </text>
+              );
+            })}
+
+            {/* Axe X : libellés + écart */}
+            {rows.map((p, i) => {
+              const delta = p.meanPost - p.meanPre;
+              const good = p.expected ? (p.expected === "agree" ? delta > 0 : delta < 0) : false;
+              const lines = wrap(`${dimEmoji(p.q)} ${shortOf(p.q)}`);
+              return (
+                <g key={p.q.id}>
+                  <text x={xOf(i)} y={M.top + PH + 24} textAnchor="middle" className="fill-ink text-[13px] font-semibold">
+                    {lines.map((l, k) => (
+                      <tspan key={k} x={xOf(i)} dy={k === 0 ? 0 : 16}>
+                        {l}
+                      </tspan>
+                    ))}
+                  </text>
+                  <text
+                    x={xOf(i)}
+                    y={M.top + PH + 24 + lines.length * 16 + 10}
+                    textAnchor="middle"
+                    className={`text-[13px] font-bold ${good ? "fill-good" : "fill-muted"}`}
+                  >
+                    {signed(delta)}
+                    {p.expected ? (good ? " ✓" : "") : ""}
+                  </text>
+                </g>
+              );
+            })}
+
+          </svg>
+
+          {/* Info-bulle */}
+          {h && hover !== null && (
+            <div
+              className={`pointer-events-none absolute z-10 w-56 -translate-x-1/2 rounded-xl border border-line bg-surface p-3 text-sm shadow-lg ${
+                tipAbove ? "-translate-y-full" : ""
+              }`}
+              style={{ left: `${(xOf(hover) / W) * 100}%`, top: `${(tipY / H) * 100}%` }}
+            >
+              <div className="font-semibold">{shortOf(h.q)}</div>
+              {SERIES.map((s) => (
+                <div key={s.key} className="mt-1 flex items-center justify-between gap-3">
+                  <span className="inline-flex items-center gap-1.5 text-muted">
+                    <span className="h-2.5 w-2.5 rounded-full" style={{ background: s.color }} />
+                    {s.label}
+                  </span>
+                  <span className="font-semibold tabular-nums">{(s.key === "pre" ? h.meanPre : h.meanPost).toFixed(2).replace(".", ",")}</span>
+                </div>
+              ))}
+              <div className="mt-1 border-t border-line pt-1 text-xs text-muted">
+                Écart {signed(h.meanPost - h.meanPre, 2)} · n = {h.n}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

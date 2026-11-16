@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { Headline, LikertCompare, LikertLegend, QuizChart, ShiftChart } from "@/components/admin/Charts";
+import { EvolutionChart, Headline, LikertCompare, LikertLegend, QuizChart } from "@/components/admin/Charts";
 import { Kpis, LogoutButton, QuestionsSection } from "@/components/admin/Dashboard";
 import { CONTENT_VERSION } from "@/content";
 import { ADMIN_COOKIE, verifyAdminToken } from "@/lib/admin-auth";
@@ -40,7 +40,7 @@ export default async function AdminPage() {
       <p className="mt-1 text-muted">
         Accord moyen avec chaque affirmation, avant puis après le quiz (mêmes participants, sessions terminées).
       </p>
-      <ShiftChart items={stats.prePost} />
+      <EvolutionChart items={stats.prePost} />
 
       <h2 className="mt-14 text-2xl font-bold">Avant / après, affirmation par affirmation</h2>
       <p className="mt-1 text-muted">Répartition des réponses des mêmes participants, avant et après le quiz.</p>
