@@ -17,8 +17,9 @@ export const quiz: Question[] = [
       fr: "Quelle quantité d'énergie consomme une requête texte « médiane » de Gemini, en wattheures (Wh) ?",
       en: "How much energy does a “median” Gemini text prompt use, in watt-hours (Wh)?",
     },
-    min: 0.01,
-    max: 100,
+    // Échelle choisie pour que la bonne réponse tombe à droite (≈ 80 % du curseur).
+    min: 0.001,
+    max: 1,
     unit: { fr: "Wh", en: "Wh" },
     correct: 0.24,
     comparison: {
@@ -46,12 +47,13 @@ export const quiz: Question[] = [
       en: "In 2024, what share of global electricity consumption did data centres account for, all uses combined?",
     },
     help: { fr: "Glisse le curseur", en: "Drag the slider" },
+    // Échelle 0-2 % pour que la bonne réponse tombe à droite (75 % du curseur).
     min: 0,
-    max: 100,
-    step: 0.5,
+    max: 2,
+    step: 0.1,
     unit: "%",
     correct: 1.5,
-    tolerance: 5,
+    tolerance: 0.8,
     explanation: {
       fr: "Environ 1,5 %, soit 415 TWh. L'AIE projette environ 945 TWh en 2030, soit un peu plus que toute la consommation d'électricité actuelle du Japon. Les centres de données restent une petite part du total mondial, mais leur impact local est beaucoup plus marqué.",
       en: "About 1.5%, or 415 TWh. The IEA projects about 945 TWh by 2030, slightly more than Japan's entire current electricity consumption. Data centres remain a small share of the global total, but their local impact is much more pronounced.",
