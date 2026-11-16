@@ -3,7 +3,7 @@ import type { Question } from "@/lib/types";
 /*
  * Quiz, contenu final de l'équipe.
  * Chaque question correspond à une affirmation du sondage :
- *   Q1 → Environnement 1 · Q2 → Environnement 2 · Q3 → Société 1 · Q4 → Société 2 · Q5 → Économie 1.
+ *   Q1 → Environnement 1 · Q2 → Environnement 2 · Q3 → Société 1 · Q4 → Société 2 · Q5 → Économie 1 · Q6 → Économie 2.
  * `explanation` et `source` sont affichés après la réponse.
  */
 export const quiz: Question[] = [
@@ -188,5 +188,36 @@ export const quiz: Question[] = [
       label: "Epoch AI — How much does it cost to train frontier AI models?",
       url: "https://epoch.ai/blog/how-much-does-it-cost-to-train-frontier-ai-models",
     },
+  },
+
+  // Q6 · 💰 Économie 2
+  {
+    id: "k_eco_2_unemployment",
+    type: "true_false",
+    dimension: "eco",
+    image: "robots",
+    prompt: {
+      fr: "L'IA va forcément créer du chômage.",
+      en: "AI will inevitably create unemployment.",
+    },
+    correct: false,
+    explanation: {
+      fr: "Faux. L'IA fait clairement disparaître des tâches, mais pas nécessairement des emplois. Selon l'OIT, un emploi sur quatre dans le monde est exposé à l'IA générative, mais l'effet le plus probable est une transformation des emplois plutôt que leur disparition. Le Forum économique mondial prévoit, d'ici 2030, 170\u00a0millions d'emplois créés et 92\u00a0millions supprimés, soit un gain net de 78\u00a0millions. Du chômage structurel reste toutefois possible si la transition est mal gérée\u00a0: 63\u00a0% des employeurs citent le manque de compétences comme principal obstacle à la transformation de leurs activités, et aux États-Unis, l'emploi des 22-25\u00a0ans dans les métiers les plus exposés a reculé de 13\u00a0% par rapport aux autres depuis l'adoption de l'IA générative. Ce sont des projections et des mesures d'exposition, pas des pertes d'emplois constatées, et l'étude de Stanford montre un lien, pas une preuve de cause.",
+      en: "False. AI clearly eliminates tasks, but not necessarily jobs. According to the ILO, one job in four worldwide is exposed to generative AI, but the most likely effect is that jobs are transformed rather than lost. The World Economic Forum projects, by 2030, 170 million jobs created and 92 million eliminated, a net gain of 78 million. Structural unemployment remains possible if the transition is poorly managed: 63% of employers cite skills gaps as the main barrier to transforming their business, and in the US, employment of 22-25-year-olds in the most exposed occupations has fallen 13% relative to others since generative AI was adopted. These are projections and exposure measures, not observed job losses, and the Stanford study shows a link, not proof of causation.",
+    },
+    source: [
+      {
+        label: "OIT / ILO — Generative AI and Jobs: A Refined Global Index of Occupational Exposure (mai 2025)",
+        url: "https://www.ilo.org/publications/generative-ai-and-jobs-refined-global-index-occupational-exposure",
+      },
+      {
+        label: "Forum économique mondial — Future of Jobs Report 2025 (janvier 2025)",
+        url: "https://www.weforum.org/media/future-of-jobs-report-2025-78-million-new-job-opportunities-by-2030-but-urgent-upskilling-needed-to-prepare-workforces",
+      },
+      {
+        label: "InfoDocket — One in Four Jobs at Risk of Being Transformed by GenAI (mai 2025)",
+        url: "https://www.infodocket.com/2025/05/20/new-report-one-in-four-jobs-at-risk-of-being-transformed-by-genai-new-ilo-nask-global-index-shows/",
+      },
+    ],
   },
 ];

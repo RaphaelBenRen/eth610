@@ -85,7 +85,20 @@ export const eco1: Question = {
   ...agree,
 };
 
+/* 💰 Économie 2 */
+export const eco2: Question = {
+  id: "s_eco_2",
+  type: "likert",
+  dimension: "eco",
+  image: "workers",
+  prompt: statement(
+    "Mon emploi, ou celui que je vise, risque d'être entièrement remplacé par une IA d'ici 5\u00a0ans.",
+    "My job, or the one I am aiming for, is at risk of being entirely replaced by AI within 5 years.",
+  ),
+  ...agree,
+};
+
 /** Questions reposées dans le sondage « après ». */
-export const REPEATED: Question[] = [env1, env2, soc1, soc2, eco1];
+export const REPEATED: Question[] = [env1, env2, soc1, soc2, eco1, eco2];
 
 export const surveyPre: Question[] = [...REPEATED];

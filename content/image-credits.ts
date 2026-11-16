@@ -16,4 +16,6 @@ export const IMAGE_CREDITS: Record<string, Credit> = {
   "servers-corridor": { author: "Christopher Bowns", license: "CC BY-SA 2.0", url: "https://commons.wikimedia.org/wiki/File:Virginia_Tech_-_data_center.jpg" },
   "bulbs": { author: "Patrick Tomasso impatrickt", license: "CC0", url: "https://commons.wikimedia.org/wiki/File:Glowing_bulbs_(Unsplash).jpg" },
   "sunset-lines": { author: "\u03a364", license: "CC BY 4.0", url: "https://commons.wikimedia.org/wiki/File:Kashima_Power_Line_07.jpg" },
+  "robots": { author: "KUKA Roboter GmbH, Bachmann", license: "Public domain", url: "https://commons.wikimedia.org/wiki/File:Factory_Automation_Robotics_Palettizing_Bread.jpg" },
+  "workers": { author: "Charles Clyde Ebbets", license: "Public domain", url: "https://commons.wikimedia.org/wiki/File:Lunch_atop_a_Skyscraper_-_Charles_Clyde_Ebbets.jpg" },
 };
