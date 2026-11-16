@@ -64,11 +64,10 @@ function wrap(text: string, max = 17, maxLines = 3) {
   return lines;
 }
 
-const W = 920;
 const H = 430;
-const M = { top: 28, right: 28, bottom: 132, left: 168 };
-const PW = W - M.left - M.right;
+const M = { top: 28, right: 64, bottom: 132, left: 168 };
 const PH = H - M.top - M.bottom;
+const SLOT = 130; // largeur d'une colonne (une affirmation)
 const yOf = (v: number) => M.top + ((5 - v) / 4) * PH;
 
 const SERIES = [
@@ -76,13 +75,21 @@ const SERIES = [
   { key: "post" as const, label: "Après le quiz", color: "var(--series-1)" },
 ];
 
-export function EvolutionChart({ items }: { items: PrePost[] }) {
-  const rows = items.filter((p) => p.n > 0 && p.q.type === "likert");
+/**
+ * Courbe « avant » et courbe « après » : x = affirmations, y = accord moyen (1-5).
+ * `expected` filtre les affirmations selon le sens attendu après le quiz.
+ */
+export function EvolutionChart({ items, expected }: { items: PrePost[]; expected?: "agree" | "disagree" }) {
+  const rows = items.filter((p) => p.n > 0 && p.q.type === "likert" && (!expected || p.expected === expected));
   const [hover, setHover] = useState<number | null>(null);
   if (!rows.length) return <Empty />;
 
-  const xOf = (i: number) => M.left + (PW * (i + 0.5)) / rows.length;
-  const colW = PW / rows.length;
+  // Au moins 3 emplacements pour que le graphique garde une largeur lisible ; les points sont centrés.
+  const slots = Math.max(rows.length, 3);
+  const PW = slots * SLOT;
+  const W = M.left + PW + M.right;
+  const offset = (slots - rows.length) / 2;
+  const xOf = (i: number) => M.left + SLOT * (i + offset + 0.5);
   const path = (key: "pre" | "post") =>
     rows.map((p, i) => `${i ? "L" : "M"}${xOf(i).toFixed(1)},${yOf(key === "pre" ? p.meanPre : p.meanPost).toFixed(1)}`).join(" ");
   const h = hover !== null ? rows[hover] : null;
@@ -91,13 +98,28 @@ export function EvolutionChart({ items }: { items: PrePost[] }) {
   const yLow = h ? yOf(Math.min(h.meanPre, h.meanPost)) : 0;
   const tipAbove = yHigh > 135;
   const tipY = tipAbove ? yHigh - 14 : yLow + 14;
+  // Toutes les lignes d'écart à la même hauteur, sous le libellé le plus long.
+  const labels = rows.map((p) => wrap(`${dimEmoji(p.q)} ${shortOf(p.q)}`));
+  const deltaY = M.top + PH + 24 + Math.max(...labels.map((l) => l.length)) * 16 + 12;
 
   /** Colonne sous le pointeur (souris ou doigt), calculée depuis sa position dans le graphique. */
   const pick = (e: React.PointerEvent<SVGSVGElement>) => {
     const box = e.currentTarget.getBoundingClientRect();
     const x = ((e.clientX - box.left) / box.width) * W;
-    const i = Math.floor((x - M.left) / colW);
+    const i = Math.floor((x - M.left) / SLOT - offset);
     setHover(i >= 0 && i < rows.length ? i : null);
+  };
+
+  // Étiquettes « Avant » / « Après » en bout de courbe, écartées si les deux points sont proches.
+  const last = rows[rows.length - 1];
+  const close = Math.abs(last.meanPre - last.meanPost) < 0.3;
+  const postAbove = last.meanPost >= last.meanPre;
+  const endLabelY = (key: "pre" | "post") => {
+    const v = key === "pre" ? last.meanPre : last.meanPost;
+    if (!close) return yOf(v);
+    const mid = yOf((last.meanPre + last.meanPost) / 2);
+    const up = key === "post" ? postAbove : !postAbove;
+    return mid + (up ? -10 : 10);
   };
 
   return (
@@ -117,7 +139,7 @@ export function EvolutionChart({ items }: { items: PrePost[] }) {
       </div>
 
       <div className="-mx-2 mt-4 overflow-x-auto px-2">
-        <div className="relative min-w-[640px]">
+        <div className="relative mx-auto min-w-[560px]" style={{ maxWidth: W }}>
           <svg
             viewBox={`0 0 ${W} ${H}`}
             className="block w-full touch-pan-y"
@@ -130,7 +152,7 @@ export function EvolutionChart({ items }: { items: PrePost[] }) {
             {/* Grille horizontale + graduations de l'axe Y */}
             {[1, 2, 3, 4, 5].map((v) => (
               <g key={v}>
-                <line x1={M.left} x2={W - M.right} y1={yOf(v)} y2={yOf(v)} stroke="var(--line)" strokeWidth={v === 3 ? 1.5 : 1} />
+                <line x1={M.left} x2={M.left + PW} y1={yOf(v)} y2={yOf(v)} stroke="var(--line)" strokeWidth={v === 3 ? 1.5 : 1} />
                 <text x={M.left - 12} y={yOf(v)} textAnchor="end" dominantBaseline="middle" className="fill-muted text-[13px]">
                   {v === 1 ? "1 · Pas du tout d'accord" : v === 3 ? "3 · Neutre" : v === 5 ? "5 · Tout à fait d'accord" : v}
                 </text>
@@ -138,22 +160,33 @@ export function EvolutionChart({ items }: { items: PrePost[] }) {
             ))}
 
             {/* Colonne survolée */}
-            {hover !== null && <rect x={xOf(hover) - colW / 2} y={M.top} width={colW} height={PH} fill="var(--surface-2)" />}
-            {hover !== null && <line x1={xOf(hover)} x2={xOf(hover)} y1={M.top} y2={M.top + PH} stroke="var(--muted)" strokeWidth="1" />}
+            {hover !== null && (
+              <>
+                <rect x={xOf(hover) - SLOT / 2} y={M.top} width={SLOT} height={PH} fill="var(--surface-2)" />
+                <line x1={xOf(hover)} x2={xOf(hover)} y1={M.top} y2={M.top + PH} stroke="var(--muted)" strokeWidth="1" />
+              </>
+            )}
 
-            {/* Zone entre les deux courbes */}
-            <path
-              d={`${path("pre")} ${rows
-                .map((p, i) => `L${xOf(rows.length - 1 - i).toFixed(1)},${yOf(rows[rows.length - 1 - i].meanPost).toFixed(1)}`)
-                .join(" ")} Z`}
-              fill="var(--series-1)"
-              opacity="0.07"
-            />
+            {/* Pour chaque affirmation : trait vertical avant → après (lisible même quand les courbes se croisent) */}
+            {rows.map((p, i) => (
+              <line
+                key={`gap-${p.q.id}`}
+                x1={xOf(i)}
+                x2={xOf(i)}
+                y1={yOf(p.meanPre)}
+                y2={yOf(p.meanPost)}
+                stroke="var(--series-1)"
+                strokeWidth="6"
+                strokeLinecap="round"
+                opacity="0.15"
+              />
+            ))}
 
             {/* Courbes */}
-            {SERIES.map((s) => (
-              <path key={s.key} d={path(s.key)} fill="none" stroke={s.color} strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
-            ))}
+            {rows.length > 1 &&
+              SERIES.map((s) => (
+                <path key={s.key} d={path(s.key)} fill="none" stroke={s.color} strokeWidth="2.5" strokeLinejoin="round" strokeLinecap="round" />
+              ))}
             {SERIES.map((s) =>
               rows.map((p, i) => (
                 <circle
@@ -169,45 +202,38 @@ export function EvolutionChart({ items }: { items: PrePost[] }) {
             )}
 
             {/* Étiquettes directes en bout de courbe */}
-            {SERIES.map((s) => {
-              const last = rows[rows.length - 1];
-              const v = s.key === "pre" ? last.meanPre : last.meanPost;
-              const other = s.key === "pre" ? last.meanPost : last.meanPre;
-              const dy = Math.abs(v - other) < 0.25 ? (v >= other ? -12 : 12) : 0;
-              return (
-                <text key={s.key} x={xOf(rows.length - 1) + 12} y={yOf(v) + dy} dominantBaseline="middle" className="fill-ink text-[12px] font-semibold">
-                  {s.key === "pre" ? "Avant" : "Après"}
-                </text>
-              );
-            })}
+            {SERIES.map((s) => (
+              <text
+                key={s.key}
+                x={xOf(rows.length - 1) + 12}
+                y={endLabelY(s.key)}
+                dominantBaseline="middle"
+                className="fill-ink text-[12px] font-semibold"
+              >
+                {s.key === "pre" ? "Avant" : "Après"}
+              </text>
+            ))}
 
             {/* Axe X : libellés + écart */}
             {rows.map((p, i) => {
               const delta = p.meanPost - p.meanPre;
               const good = p.expected ? (p.expected === "agree" ? delta > 0 : delta < 0) : false;
-              const lines = wrap(`${dimEmoji(p.q)} ${shortOf(p.q)}`);
               return (
                 <g key={p.q.id}>
                   <text x={xOf(i)} y={M.top + PH + 24} textAnchor="middle" className="fill-ink text-[13px] font-semibold">
-                    {lines.map((l, k) => (
+                    {labels[i].map((l, k) => (
                       <tspan key={k} x={xOf(i)} dy={k === 0 ? 0 : 16}>
                         {l}
                       </tspan>
                     ))}
                   </text>
-                  <text
-                    x={xOf(i)}
-                    y={M.top + PH + 24 + lines.length * 16 + 10}
-                    textAnchor="middle"
-                    className={`text-[13px] font-bold ${good ? "fill-good" : "fill-muted"}`}
-                  >
+                  <text x={xOf(i)} y={deltaY} textAnchor="middle" className={`text-[14px] font-bold ${good ? "fill-good" : "fill-muted"}`}>
                     {signed(delta)}
-                    {p.expected ? (good ? " ✓" : "") : ""}
+                    {p.expected && good ? " ✓" : ""}
                   </text>
                 </g>
               );
             })}
-
           </svg>
 
           {/* Info-bulle */}

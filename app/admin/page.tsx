@@ -40,7 +40,14 @@ export default async function AdminPage() {
       <p className="mt-1 text-muted">
         Accord moyen avec chaque affirmation, avant puis après le quiz (mêmes participants, sessions terminées).
       </p>
-      <EvolutionChart items={stats.prePost} />
+
+      <h3 className="mt-8 text-lg font-bold">📈 Affirmations où l&apos;on attend plus d&apos;accord après le quiz</h3>
+      <p className="text-sm text-muted">La courbe bleue (après) devrait passer au-dessus de la courbe orange (avant).</p>
+      <EvolutionChart items={stats.prePost} expected="agree" />
+
+      <h3 className="mt-10 text-lg font-bold">📉 Affirmations où l&apos;on attend moins d&apos;accord après le quiz</h3>
+      <p className="text-sm text-muted">La courbe bleue (après) devrait passer sous la courbe orange (avant).</p>
+      <EvolutionChart items={stats.prePost} expected="disagree" />
 
       <h2 className="mt-14 text-2xl font-bold">Avant / après, affirmation par affirmation</h2>
       <p className="mt-1 text-muted">Répartition des réponses des mêmes participants, avant et après le quiz.</p>
