@@ -83,6 +83,8 @@ export function EvolutionChart({ items, expected }: { items: PrePost[]; expected
   const rows = items.filter((p) => p.n > 0 && p.q.type === "likert" && (!expected || p.expected === expected));
   const [hover, setHover] = useState<number | null>(null);
   if (!rows.length) return <Empty />;
+  // Une seule affirmation : une courbe n'a pas de sens, on montre deux colonnes avant / après.
+  if (rows.length === 1) return <Spotlight p={rows[0]} />;
 
   // Au moins 3 emplacements pour que le graphique garde une largeur lisible ; les points sont centrés.
   const slots = Math.max(rows.length, 3);
@@ -265,6 +267,74 @@ export function EvolutionChart({ items, expected }: { items: PrePost[]; expected
   );
 }
 
+/** Vue « projecteur » pour une seule affirmation : % d'accord avant / après en deux grandes colonnes. */
+function Spotlight({ p }: { p: PrePost }) {
+  const agree = (d?: number[]) => (d ? (d[3] + d[4]) / p.n : null);
+  const before = agree(p.distPre) ?? 0;
+  const after = agree(p.distPost) ?? 0;
+  const diffPts = Math.round(after * 100) - Math.round(before * 100);
+  const good = p.expected ? (p.expected === "agree" ? diffPts > 0 : diffPts < 0) : false;
+  const cols = [
+    { label: "Avant le quiz", value: before, color: "var(--series-2)" },
+    { label: "Après le quiz", value: after, color: "var(--series-1)" },
+  ];
+
+  return (
+    <div className="mt-4 grid items-center gap-8 rounded-3xl border border-line bg-surface p-6 sm:p-10 md:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)]">
+      {/* Deux colonnes sur une échelle 0-100 % */}
+      <div className="relative h-80">
+        {/* Zone du graphique : graduations et colonnes partagent exactement la même hauteur */}
+        <div className="absolute top-3 right-0 bottom-8 left-12">
+          {[100, 75, 50, 25, 0].map((t) => (
+            <div key={t} className="absolute inset-x-0 h-px bg-line" style={{ bottom: `${t}%` }}>
+              <span className="absolute -left-12 w-10 -translate-y-1/2 text-right text-xs text-muted tabular-nums">{t} %</span>
+            </div>
+          ))}
+          <div className="absolute inset-0 flex items-end justify-center gap-6 sm:gap-10">
+            {cols.map((c) => (
+              <div
+                key={c.label}
+                className="relative w-20 rounded-t-lg sm:w-24"
+                style={{ height: `${c.value * 100}%`, background: c.color, minHeight: 4 }}
+                title={`${c.label} : ${Math.round(c.value * 100)} % d'accord (n = ${p.n})`}
+              >
+                <span className="absolute inset-x-0 -top-10 text-center text-2xl font-extrabold tabular-nums sm:text-3xl">
+                  {Math.round(c.value * 100)} %
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="absolute right-0 bottom-0 left-12 flex justify-center gap-6 text-sm font-semibold sm:gap-10">
+          {cols.map((c) => (
+            <span key={c.label} className="w-20 text-center sm:w-24">
+              {c.label.replace(" le quiz", "")}
+            </span>
+          ))}
+        </div>
+      </div>
+
+      {/* Message principal */}
+      <div>
+        <p className="text-sm font-semibold tracking-wide text-muted uppercase">Part des participants d&apos;accord</p>
+        <h4 className="mt-2 text-2xl leading-snug font-bold">
+          <span aria-hidden>{dimEmoji(p.q)} </span>
+          {shortOf(p.q)}
+        </h4>
+        <p className="mt-2 text-sm leading-snug text-muted">{p.q.prompt.fr}</p>
+        <p className={`mt-6 text-5xl font-extrabold tracking-tight tabular-nums sm:text-6xl ${good ? "text-good" : ""}`}>
+          {diffPts > 0 ? "▲ +" : diffPts < 0 ? "▼ −" : "= "}
+          {Math.abs(diffPts)} pts
+        </p>
+        <p className="mt-2 text-muted">
+          {good ? "✓ dans le sens attendu · " : ""}accord moyen {p.meanPre.toFixed(2).replace(".", ",")} → {p.meanPost.toFixed(2).replace(".", ",")} sur 5 ·
+          n = {p.n}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 /* ---------- 3. Détail : barres empilées avant / après ---------- */
 
 export function LikertLegend() {
@@ -315,7 +385,7 @@ export function LikertCompare({ items }: { items: PrePost[] }) {
         const agree = (d: number[]) => (d[3] + d[4]) / p.n;
         const before = agree(p.distPre!);
         const after = agree(p.distPost!);
-        const diffPts = Math.round((after - before) * 100);
+        const diffPts = Math.round(after * 100) - Math.round(before * 100);
         const good = p.expected ? (p.expected === "agree" ? diffPts > 0 : diffPts < 0) : false;
         return (
           <article key={p.q.id} className="rounded-3xl border border-line bg-surface p-5 sm:p-6">
