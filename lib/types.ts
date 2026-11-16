@@ -24,6 +24,8 @@ type Base = {
   dimension?: Dimension;
   /** Photo d'illustration : nom du fichier dans public/images (sans .jpg), crédit dans content/image-credits.ts. */
   image?: string;
+  /** Libellé court pour les graphiques du dashboard. */
+  short?: L;
 };
 
 export type Source = { label: string; url: string };
@@ -45,7 +47,17 @@ export type ABQ = Base &
  * Si `labels` est fourni (5 libellés, du niveau 1 au niveau 5), chaque option est affichée en toutes lettres,
  * de l'accord au désaccord ; sinon, 5 pastilles avec `minLabel` / `maxLabel` aux extrémités.
  */
-export type LikertQ = Base & { type: "likert"; minLabel: L; maxLabel: L; labels?: L[] };
+export type LikertQ = Base & {
+  type: "likert";
+  minLabel: L;
+  maxLabel: L;
+  labels?: L[];
+  /**
+   * Évolution attendue après le quiz (sondage répété) : « agree » = l'accord devrait augmenter,
+   * « disagree » = il devrait baisser. Sert au dashboard pour indiquer si l'avis a bougé « dans le sens attendu ».
+   */
+  expected?: "agree" | "disagree";
+};
 /** Jauge linéaire (par défaut 0-100). */
 export type GaugeQ = Base &
   QuizExtras & {

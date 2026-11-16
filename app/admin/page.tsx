@@ -1,6 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import { Kpis, LogoutButton, PrePostSection, QuestionsSection } from "@/components/admin/Dashboard";
+import { Headline, LikertCompare, LikertLegend, QuizChart, ShiftChart } from "@/components/admin/Charts";
+import { Kpis, LogoutButton, QuestionsSection } from "@/components/admin/Dashboard";
 import { CONTENT_VERSION } from "@/content";
 import { ADMIN_COOKIE, verifyAdminToken } from "@/lib/admin-auth";
 import { getStore, usingSupabase } from "@/lib/db";
@@ -33,16 +34,28 @@ export default async function AdminPage() {
         <LogoutButton />
       </header>
 
-      <Kpis kpis={stats.kpis} />
+      <Headline kpis={stats.kpis} quiz={stats.questions.filter((s) => s.phase === "quiz")} />
 
-      <h2 className="mt-12 text-xl font-bold">⭐ Évolution avant / après</h2>
-      <p className="mt-1 text-sm text-muted">
-        Comparaison appariée, par répondant, sur les sessions terminées. Même question posée au sondage 1 puis au sondage 2.
+      <h2 className="mt-14 text-2xl font-bold">Le quiz a-t-il fait bouger les avis&nbsp;?</h2>
+      <p className="mt-1 text-muted">
+        Accord moyen avec chaque affirmation, avant puis après le quiz (mêmes participants, sessions terminées).
       </p>
-      <PrePostSection items={stats.prePost} />
+      <ShiftChart items={stats.prePost} />
 
-      <h2 className="mt-12 text-xl font-bold">Détail par question</h2>
-      <QuestionsSection questions={stats.questions} />
+      <h2 className="mt-14 text-2xl font-bold">Avant / après, affirmation par affirmation</h2>
+      <p className="mt-1 text-muted">Répartition des réponses des mêmes participants, avant et après le quiz.</p>
+      <LikertLegend />
+      <LikertCompare items={stats.prePost} />
+
+      <h2 className="mt-14 text-2xl font-bold">Résultats du quiz</h2>
+      <p className="mt-1 text-muted">Part de bonnes réponses par question.</p>
+      <QuizChart questions={stats.questions.filter((s) => s.phase === "quiz")} />
+
+      <details className="group mt-16 rounded-3xl border border-line bg-surface-2/50 p-5 sm:p-6">
+        <summary className="cursor-pointer text-lg font-bold">Données détaillées (participation, réponses brutes par question)</summary>
+        <Kpis kpis={stats.kpis} />
+        <QuestionsSection questions={stats.questions} />
+      </details>
 
     </div>
   );

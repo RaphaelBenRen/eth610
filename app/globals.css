@@ -206,3 +206,22 @@ body {
     --brand-soft: #3b2214;
   }
 }
+
+/* Échelle d'accord (dashboard) : palette divergente rouge ↔ bleu, milieu gris neutre (validée daltonisme).
+   --lk-N = couleur du niveau N, --lk-N-ink = couleur du texte posé dessus. */
+:root {
+  --lk-1: #c23a3a; --lk-1-ink: #ffffff;
+  --lk-2: #e8a29c; --lk-2-ink: #16241d;
+  --lk-3: #ecebe7; --lk-3-ink: #16241d;
+  --lk-4: #86b6ef; --lk-4-ink: #16241d;
+  --lk-5: #256abf; --lk-5-ink: #ffffff;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --lk-1: #ef7a72; --lk-1-ink: #16241d;
+    --lk-2: #9e4a46; --lk-2-ink: #ffffff;
+    --lk-3: #383835; --lk-3-ink: #ffffff;
+    --lk-4: #2d5f9c; --lk-4-ink: #ffffff;
+    --lk-5: #6da7ec; --lk-5-ink: #16241d;
+  }
+}

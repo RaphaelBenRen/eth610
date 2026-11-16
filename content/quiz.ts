@@ -10,6 +10,7 @@ export const quiz: Question[] = [
   // Q1 · 🌍 Environnement 1
   {
     id: "k_env_1_prompt_energy",
+    short: { fr: "Énergie d'une requête", en: "Energy per prompt" },
     type: "estimate",
     dimension: "env",
     image: "bulb",
@@ -39,6 +40,7 @@ export const quiz: Question[] = [
   // Q2 · 🌍 Environnement 2
   {
     id: "k_env_2_datacenter_share",
+    short: { fr: "Part des centres de données", en: "Data centres' share" },
     type: "gauge",
     dimension: "env",
     image: "powerlines",
@@ -67,6 +69,7 @@ export const quiz: Question[] = [
   // Q3 · 👥 Société 1
   {
     id: "k_soc_1_cv_bias",
+    short: { fr: "Biais du tri de CV", en: "Résumé-screening bias" },
     type: "single",
     dimension: "soc",
     image: "interview-woman",
@@ -118,6 +121,7 @@ export const quiz: Question[] = [
   // Q4 · 👥 Société 2
   {
     id: "k_soc_2_privacy",
+    short: { fr: "Lecture humaine des prompts", en: "Humans reading prompts" },
     type: "single",
     dimension: "soc",
     image: "cameras",
@@ -166,6 +170,7 @@ export const quiz: Question[] = [
   // Q5 · 💰 Économie 1
   {
     id: "k_eco_1_training_cost",
+    short: { fr: "Coût d'entraînement de GPT-4", en: "GPT-4 training cost" },
     type: "estimate",
     dimension: "eco",
     image: "gpu",
@@ -195,6 +200,7 @@ export const quiz: Question[] = [
   // Q6 · 💰 Économie 2
   {
     id: "k_eco_2_unemployment",
+    short: { fr: "IA et chômage", en: "AI and unemployment" },
     type: "true_false",
     dimension: "eco",
     image: "robots",

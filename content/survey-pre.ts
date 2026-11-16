@@ -24,6 +24,8 @@ const statement = (fr: string, en: string): L => ({ fr: `« ${fr} »`, en: `�
 export const env1: Question = {
   id: "s_env_1",
   type: "likert",
+  short: { fr: "2 h d'IA par jour = impact négligeable", en: "2 h of AI a day = negligible impact" },
+  expected: "disagree",
   dimension: "env",
   image: "phone",
   prompt: statement(
@@ -37,6 +39,8 @@ export const env1: Question = {
 export const env2: Question = {
   id: "s_env_2",
   type: "likert",
+  short: { fr: "Les centres de données ont un fort impact", en: "Data centres have a major impact" },
+  expected: "agree",
   dimension: "env",
   image: "cooling",
   prompt: statement(
@@ -50,6 +54,8 @@ export const env2: Question = {
 export const soc1: Question = {
   id: "s_soc_1",
   type: "likert",
+  short: { fr: "L'IA est plus objective qu'un humain", en: "AI is more objective than a human" },
+  expected: "disagree",
   dimension: "soc",
   image: "interview",
   prompt: statement(
@@ -63,6 +69,8 @@ export const soc1: Question = {
 export const soc2: Question = {
   id: "s_soc_2",
   type: "likert",
+  short: { fr: "Mes prompts restent privés", en: "My prompts stay private" },
+  expected: "disagree",
   dimension: "soc",
   image: "padlock",
   prompt: statement(
@@ -76,6 +84,8 @@ export const soc2: Question = {
 export const eco1: Question = {
   id: "s_eco_1",
   type: "likert",
+  short: { fr: "Une PME peut entraîner son propre modèle", en: "An SME can train its own model" },
+  expected: "disagree",
   dimension: "eco",
   image: "money",
   prompt: statement(
@@ -89,6 +99,8 @@ export const eco1: Question = {
 export const eco2: Question = {
   id: "s_eco_2",
   type: "likert",
+  short: { fr: "Mon emploi sera remplacé d'ici 5 ans", en: "My job will be replaced within 5 years" },
+  expected: "disagree",
   dimension: "eco",
   image: "workers",
   prompt: statement(

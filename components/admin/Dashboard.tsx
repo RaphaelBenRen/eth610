@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import type { Bar, PrePost, QuestionStats, Stats } from "@/lib/stats";
+import type { Bar, QuestionStats, Stats } from "@/lib/stats";
 import type { Phase } from "@/lib/types";
 
 const pct = (x: number | null, digits = 0) => (x === null ? "—" : `${(x * 100).toFixed(digits)} %`);
@@ -62,124 +62,6 @@ export function Kpis({ kpis }: { kpis: Stats["kpis"] }) {
       <Tile label="Score moyen au quiz" value={pct(kpis.avgQuizScore)} sub="justesse moyenne" />
       <Tile label="Langue / appareil" value={split(kpis.locales)} sub={split(kpis.devices)} small />
     </div>
-  );
-}
-
-/* ---------- Avant / après ---------- */
-
-function Legend({ items }: { items: { color: string; label: string }[] }) {
-  return (
-    <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted">
-      {items.map((i) => (
-        <span key={i.label} className="inline-flex items-center gap-1.5">
-          <span className="h-3 w-3 rounded-full" style={{ background: i.color }} aria-hidden />
-          {i.label}
-        </span>
-      ))}
-    </div>
-  );
-}
-
-function Dumbbell({ p }: { p: PrePost }) {
-  const pos = (v: number) => `${((v - p.scaleMin) / (p.scaleMax - p.scaleMin)) * 100}%`;
-  const [lo, hi] = [Math.min(p.meanPre, p.meanPost), Math.max(p.meanPre, p.meanPost)];
-  return (
-    <div className="px-2">
-      <div className="relative h-10">
-        <div className="absolute top-1/2 right-0 left-0 h-px bg-line" />
-        <div className="absolute top-1/2 h-0.5 -translate-y-1/2 bg-muted/60" style={{ left: pos(lo), width: `calc(${pos(hi)} - ${pos(lo)})` }} />
-        {[
-          { v: p.meanPre, color: "var(--series-2)", label: "Avant" },
-          { v: p.meanPost, color: "var(--series-1)", label: "Après" },
-        ].map((d) => (
-          <div
-            key={d.label}
-            title={`${d.label} : ${num(d.v, 2)}`}
-            className="absolute top-1/2 h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full ring-2 ring-surface"
-            style={{ left: pos(d.v), background: d.color }}
-          />
-        ))}
-      </div>
-      <div className="flex justify-between text-xs text-muted tabular-nums">
-        <span>{p.scaleMin}</span>
-        <span>{p.scaleMax}</span>
-      </div>
-    </div>
-  );
-}
-
-function ChangeBar({ p }: { p: PrePost }) {
-  const segs = [
-    { k: "down", n: p.down, color: "var(--div-down)", label: "↓ Baisse" },
-    { k: "same", n: p.same, color: "var(--div-mid)", label: "= Inchangé" },
-    { k: "up", n: p.up, color: "var(--div-up)", label: "↑ Hausse" },
-  ];
-  return (
-    <div>
-      <div className="flex h-5 gap-0.5 overflow-hidden rounded-md">
-        {segs
-          .filter((s) => s.n > 0)
-          .map((s) => (
-            <div key={s.k} title={`${s.label} : ${s.n} (${pct(s.n / p.n)})`} style={{ width: `${(s.n / p.n) * 100}%`, background: s.color }} />
-          ))}
-      </div>
-      <div className="mt-1 flex justify-between gap-2 text-xs text-muted tabular-nums">
-        {segs.map((s) => (
-          <span key={s.k}>
-            {s.label} {pct(s.n / p.n)}
-          </span>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-export function PrePostSection({ items }: { items: PrePost[] }) {
-  if (!items.length) return <p className="mt-4 text-muted">Aucune question répétée.</p>;
-  return (
-    <>
-      <div className="mt-4">
-        <Legend
-          items={[
-            { color: "var(--series-2)", label: "Moyenne avant (sondage 1)" },
-            { color: "var(--series-1)", label: "Moyenne après (sondage 2)" },
-          ]}
-        />
-      </div>
-      <div className="mt-4 grid gap-4 md:grid-cols-2">
-        {items.map((p) => {
-          const delta = p.meanPost - p.meanPre;
-          return (
-            <article key={p.q.id} className="rounded-2xl border border-line bg-surface p-5">
-              <div className="flex items-start justify-between gap-3">
-                <h3 className="font-semibold">{p.q.prompt.fr}</h3>
-                <span className="shrink-0 text-xs text-muted">n = {p.n}</span>
-              </div>
-              {p.n === 0 ? (
-                <p className="mt-4 text-sm text-muted">Pas encore de réponses appariées.</p>
-              ) : (
-                <>
-                  <p className="mt-3 text-sm tabular-nums">
-                    <span className="text-muted">Avant</span> <strong>{num(p.meanPre, 2)}</strong>
-                    <span className="text-muted"> → Après</span> <strong>{num(p.meanPost, 2)}</strong>
-                    <span className="ml-2 rounded-md bg-surface-2 px-1.5 py-0.5 font-semibold">
-                      {delta >= 0 ? "+" : ""}
-                      {num(delta, 2)}
-                    </span>
-                  </p>
-                  <div className="mt-3">
-                    <Dumbbell p={p} />
-                  </div>
-                  <div className="mt-4">
-                    <ChangeBar p={p} />
-                  </div>
-                </>
-              )}
-            </article>
-          );
-        })}
-      </div>
-    </>
   );
 }
 

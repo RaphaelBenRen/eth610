@@ -21,6 +21,8 @@ export type QuestionStats = {
   n: number;
   /** Quiz : justesse moyenne (0-1). */
   successRate: number | null;
+  /** Quiz : part des réponses jugées justes (justesse ≥ 0,8). */
+  rightShare: number | null;
   bars: Bar[];
   /** Jauge / estimation : moyenne, médiane, bonne réponse. */
   summary?: { mean: number; median: number; correct?: number; unit?: string };
@@ -38,6 +40,12 @@ export type PrePost = {
   up: number;
   same: number;
   down: number;
+  /** Échelle d'accord : nombre de réponses par niveau (index 0 = niveau 1), avant / après. */
+  distPre?: number[];
+  distPost?: number[];
+  /** Sens attendu après le quiz, et nombre de répondants ayant bougé dans ce sens. */
+  expected?: "agree" | "disagree";
+  movedExpected: number;
 };
 
 export type Stats = {
@@ -46,6 +54,10 @@ export type Stats = {
     completed: number;
     completionRate: number | null;
     avgQuizScore: number | null;
+    /** Part des participants (sessions terminées) dont au moins un avis a changé entre les deux sondages. */
+    changedAny: number | null;
+    /** Sur l'ensemble des paires (répondant × affirmation avec sens attendu), part qui a bougé dans le sens attendu. */
+    movedExpectedShare: number | null;
     locales: Record<string, number>;
     devices: Record<string, number>;
   };
@@ -101,6 +113,7 @@ function questionStats(phase: Phase, q: Question, rows: AnswerRow[]): QuestionSt
     q,
     n,
     successRate: phase === "quiz" ? mean(quizRows.map((r) => r.correctness!)) : null,
+    rightShare: phase === "quiz" ? mean(quizRows.map((r) => (r.correctness! >= 0.8 ? 1 : 0))) : null,
     bars: [],
   };
   const share = (c: number) => (n ? c / n : 0);
@@ -195,6 +208,8 @@ export function computeStats(sessions: SessionRow[], answers: AnswerRow[]): Stat
     completed: completed.length,
     completionRate: sessions.length ? completed.length / sessions.length : null,
     avgQuizScore: mean(completed.map((s) => s.quiz_score).filter((x): x is number => x !== null)),
+    changedAny: null,
+    movedExpectedShare: null,
     locales: tally("locale"),
     devices: tally("device"),
   };
@@ -211,6 +226,7 @@ export function computeStats(sessions: SessionRow[], answers: AnswerRow[]): Stat
 
   // Avant / après : uniquement les sessions terminées ayant répondu aux deux.
   const prePost: PrePost[] = [];
+  const changedSessions = new Set<string>();
   for (const q of CONTENT.post) {
     const scale = scaleOf(q);
     if (!scale || !CONTENT.pre.some((p) => p.id === q.id)) continue;
@@ -221,10 +237,15 @@ export function computeStats(sessions: SessionRow[], answers: AnswerRow[]): Stat
     for (const a of byQ.get(`post:${q.id}`) ?? []) {
       const before = pre.get(a.session_id);
       const after = numericValue(a.value);
-      if (completedIds.has(a.session_id) && before != null && after != null) pairs.push([before, after]);
+      if (completedIds.has(a.session_id) && before != null && after != null) {
+        pairs.push([before, after]);
+        if (before !== after) changedSessions.add(a.session_id);
+      }
     }
+    const expected = q.type === "likert" ? q.expected : undefined;
+    const dist = (i: 0 | 1) => [1, 2, 3, 4, 5].map((l) => pairs.filter((p) => p[i] === l).length);
     if (!pairs.length) {
-      prePost.push({ q, n: 0, scaleMin: scale[0], scaleMax: scale[1], meanPre: 0, meanPost: 0, up: 0, same: 0, down: 0 });
+      prePost.push({ q, n: 0, scaleMin: scale[0], scaleMax: scale[1], meanPre: 0, meanPost: 0, up: 0, same: 0, down: 0, expected, movedExpected: 0 });
       continue;
     }
     // Pour une jauge 0-100, un écart de moins de 5 points compte comme « inchangé ».
@@ -239,8 +260,19 @@ export function computeStats(sessions: SessionRow[], answers: AnswerRow[]): Stat
       up: pairs.filter(([a, b]) => b - a > eps).length,
       same: pairs.filter(([a, b]) => Math.abs(b - a) <= eps).length,
       down: pairs.filter(([a, b]) => a - b > eps).length,
+      distPre: q.type === "likert" ? dist(0) : undefined,
+      distPost: q.type === "likert" ? dist(1) : undefined,
+      expected,
+      movedExpected: expected
+        ? pairs.filter(([a, b]) => (expected === "agree" ? b - a > eps : a - b > eps)).length
+        : 0,
     });
   }
+
+  const withExpected = prePost.filter((p) => p.expected && p.n > 0);
+  const pairsExpected = withExpected.reduce((s, p) => s + p.n, 0);
+  kpis.changedAny = completed.length ? changedSessions.size / completed.length : null;
+  kpis.movedExpectedShare = pairsExpected ? withExpected.reduce((s, p) => s + p.movedExpected, 0) / pairsExpected : null;
 
   return { kpis, prePost, questions };
 }
