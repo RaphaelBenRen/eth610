@@ -45,7 +45,7 @@ export type ABQ = Base &
 /**
  * Échelle d'accord 1-5 (sondages uniquement). Niveau 1 = désaccord total, 5 = accord total.
  * Si `labels` est fourni (5 libellés, du niveau 1 au niveau 5), chaque option est affichée en toutes lettres,
- * de l'accord au désaccord ; sinon, 5 pastilles avec `minLabel` / `maxLabel` aux extrémités.
+ * du désaccord à l'accord ; sinon, 5 pastilles avec `minLabel` / `maxLabel` aux extrémités.
  */
 export type LikertQ = Base & {
   type: "likert";

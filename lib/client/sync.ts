@@ -29,9 +29,19 @@ async function post(url: string, body: unknown) {
   });
 }
 
-async function ensureSession(): Promise<string> {
+let creating: Promise<string> | undefined;
+
+/** Une seule création à la fois : sur un réseau lent, la première réponse part avant la fin de la création. */
+function ensureSession(): Promise<string> {
   const existing = load<string>(KEYS.session);
-  if (existing) return existing;
+  if (existing) return Promise.resolve(existing);
+  creating ??= createSession().finally(() => {
+    creating = undefined;
+  });
+  return creating;
+}
+
+async function createSession(): Promise<string> {
   const res = await post("/api/session", { locale });
   if (!res.ok) throw new Error(`session ${res.status}`);
   const { sessionId } = (await res.json()) as { sessionId: string };

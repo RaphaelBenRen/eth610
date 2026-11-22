@@ -144,7 +144,7 @@ export function EvolutionChart({ items, expected }: { items: PrePost[]; expected
         <div className="relative mx-auto min-w-[560px]" style={{ maxWidth: W }}>
           <svg
             viewBox={`0 0 ${W} ${H}`}
-            className="block w-full touch-pan-y"
+            className="block w-full"
             role="img"
             aria-label="Accord moyen avant et après le quiz, par affirmation"
             onPointerMove={pick}

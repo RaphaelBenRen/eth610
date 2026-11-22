@@ -18,6 +18,10 @@ export const quiz: Question[] = [
       fr: "Quelle quantité d'énergie consomme une requête texte « médiane » de Gemini, en wattheures (Wh) ?",
       en: "How much energy does a “median” Gemini text prompt use, in watt-hours (Wh)?",
     },
+    help: {
+      fr: "Pour comparer\u00a0: 1\u00a0minute de téléphone allumé ≃\u00a00,05\u00a0Wh",
+      en: "For comparison: 1 minute with a phone switched on ≃ 0.05 Wh",
+    },
     // Échelle choisie pour que la bonne réponse tombe à droite (≈ 80 % du curseur).
     min: 0.001,
     max: 1,

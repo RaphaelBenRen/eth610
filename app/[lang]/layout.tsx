@@ -39,7 +39,7 @@ export default async function PublicLayout({ children, params }: LayoutProps<"/[
 
   return (
     <html lang={lang} className={`${geist.variable} h-full antialiased`}>
-      <body className="flex min-h-dvh flex-col pb-[env(safe-area-inset-bottom)]">
+      <body className="flex min-h-svh flex-col pb-[env(safe-area-inset-bottom)]">
         <header className="mx-auto flex w-full max-w-5xl items-center justify-between px-4 pt-[max(0.75rem,env(safe-area-inset-top))] sm:px-6">
           <Link href={`/${lang}`} className="flex items-center gap-2 font-bold tracking-tight">
             <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-brand text-sm text-brand-ink" aria-hidden>

@@ -11,8 +11,8 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
   const t = getDict(lang);
 
   return (
-    <div className="mx-auto grid w-full max-w-5xl flex-1 items-center gap-4 px-4 py-4 sm:gap-10 sm:px-6 md:py-14 lg:grid-cols-[1.15fr_1fr] lg:gap-16">
-      <Photo name="hero" className="rounded-3xl shadow-sm" overlay="full" priority sizes="(min-width: 1024px) 560px, 100vw">
+    <div className="mx-auto grid w-full max-w-5xl flex-1 content-center items-center gap-4 px-4 py-4 sm:gap-10 sm:px-6 md:py-14 lg:grid-cols-[1.15fr_1fr] lg:gap-16">
+      <Photo name="hero" className="rounded-3xl shadow-sm" overlay="full" preload sizes="(min-width: 1024px) 560px, 100vw">
         <div className="relative px-5 pt-6 pb-8 text-white sm:p-10 lg:py-14">
           <p className="text-xs font-semibold tracking-widest text-white/80 uppercase sm:text-sm">{t.home.kicker}</p>
           <h1 className="mt-2 text-[2.25rem] leading-[1.05] font-extrabold tracking-tight text-balance sm:text-5xl lg:text-6xl">
@@ -23,7 +23,7 @@ export default async function Home({ params }: PageProps<"/[lang]">) {
             {t.home.pills.map((p) => (
               <li
                 key={p}
-                className="rounded-full border border-white/25 bg-white/15 px-2.5 py-1 text-xs font-medium backdrop-blur sm:px-3 sm:text-sm"
+                className="rounded-full border border-white/25 bg-white/15 px-2.5 py-1 text-xs font-medium sm:px-3 sm:text-sm"
               >
                 {p}
               </li>

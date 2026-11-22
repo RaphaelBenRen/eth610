@@ -12,7 +12,7 @@ export default async function MerciPage({ params }: PageProps<"/[lang]/merci">) 
 
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-8 sm:px-6 md:py-14">
-      <Photo name="sunset-lines" className="rounded-3xl" overlay="bottom" priority sizes="(min-width: 896px) 896px, 100vw">
+      <Photo name="sunset-lines" className="rounded-3xl" overlay="bottom" preload sizes="(min-width: 896px) 896px, 100vw">
         <div className="relative flex min-h-48 items-end p-6 sm:min-h-64 sm:p-10">
           <h1 className="text-3xl font-extrabold tracking-tight text-balance text-white sm:text-4xl">{t.end.title}</h1>
         </div>

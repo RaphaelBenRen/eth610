@@ -9,10 +9,10 @@ export function Likert(props: QProps<LikertQ>) {
   return props.q.labels?.length === 5 ? <LabeledLikert {...props} labels={props.q.labels} /> : <FacesLikert {...props} />;
 }
 
-/** 5 options en toutes lettres, de l'accord total (en haut / à gauche) au désaccord total. */
+/** 5 options en toutes lettres, du désaccord total (en haut / à gauche) à l'accord total. */
 function LabeledLikert({ q, locale, answer, onAnswer, labels }: QProps<LikertQ> & { labels: NonNullable<LikertQ["labels"]> }) {
   const chosen = answer && "level" in answer ? answer.level : undefined;
-  const levels = [5, 4, 3, 2, 1];
+  const levels = [1, 2, 3, 4, 5];
 
   useHotkeys((key) => {
     const level = levels[Number(key) - 1];

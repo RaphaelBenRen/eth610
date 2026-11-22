@@ -64,6 +64,9 @@
 }
 
 html {
+  /* Même fond que la page, thème sombre compris : pas d'éclair blanc au chargement ni au rebond du défilement. */
+  background: var(--bg);
+  color-scheme: light dark;
   -webkit-text-size-adjust: 100%;
   -webkit-tap-highlight-color: transparent;
 }
@@ -72,6 +75,13 @@ body {
   background: var(--bg);
   color: var(--ink);
   font-family: var(--font-sans);
+}
+
+/* Pas de zoom au double-appui ni de délai sur mobile */
+button,
+a,
+label {
+  touch-action: manipulation;
 }
 
 /* Boutons et cartes cliquables */

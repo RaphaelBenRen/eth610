@@ -33,8 +33,16 @@ export function Feedback({
   const btn = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
-    // Sur mobile, la carte peut être sous la ligne de flottaison : on la fait défiler.
-    ref.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    // On descend juste assez pour lire la correction, en gardant son titre (et le curseur au-dessus) visibles :
+    // la carte ne remonte jamais plus haut que 45 % de l'écran, donc jamais sous la barre de progression.
+    const box = ref.current?.getBoundingClientRect();
+    if (box) {
+      const toShowAll = box.bottom + 24 - window.innerHeight;
+      const toMidScreen = box.top - window.innerHeight * 0.45;
+      const calm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const top = Math.max(0, Math.min(toShowAll, toMidScreen));
+      if (top > 0) window.scrollBy({ top, behavior: calm ? "instant" : "smooth" });
+    }
     btn.current?.focus({ preventScroll: true });
   }, []);
 
@@ -46,10 +54,10 @@ export function Feedback({
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 16 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className={`mt-6 scroll-mb-6 rounded-2xl border-2 p-5 ${s.box}`}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.25 }}
+      className={`mt-6 rounded-2xl border-2 p-5 ${s.box}`}
       role="status"
       aria-live="polite"
     >

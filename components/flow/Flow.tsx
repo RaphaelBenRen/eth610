@@ -1,16 +1,16 @@
 "use client";
 
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, MotionConfig } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { CONTENT } from "@/content";
-import { KEYS, load, remove, save } from "@/lib/client/storage";
+import { CONTENT, CONTENT_VERSION } from "@/content";
+import { hasFinished, KEYS, load, loadRun, remove, save } from "@/lib/client/storage";
 import { sync } from "@/lib/client/sync";
 import { isBrowser, useHydrated } from "@/lib/client/useHydrated";
 import { score as scoreOf } from "@/lib/scoring";
 import type { AnswerValue, Locale, Phase, Question } from "@/lib/types";
 import type { Dict } from "@/messages";
-import { Photo } from "../Photo";
+import { Photo, PhotoPreloader } from "../Photo";
 import { QuestionView } from "../questions/QuestionView";
 import { useHotkeys } from "../questions/shared";
 import { Feedback } from "./Feedback";
@@ -31,7 +31,27 @@ const SCREENS: Screen[] = [
   ...phaseScreens("post"),
 ];
 
+const SIZES = {
+  survey: "(min-width: 768px) 672px, 100vw",
+  quiz: "(min-width: 1024px) 400px, 100vw",
+  break: "(min-width: 1024px) 976px, 100vw",
+};
+const BREAK_IMAGE = { quiz: "servers-corridor", post: "bulbs" } as const;
+
+/** Photos des deux prochains écrans, à charger pendant qu'on lit l'écran courant. */
+const upcomingPhotos = (index: number) =>
+  SCREENS.slice(index + 1, index + 3).flatMap((s) =>
+    s.kind === "break"
+      ? [{ name: BREAK_IMAGE[s.to], sizes: SIZES.break }]
+      : s.q.image
+        ? [{ name: s.q.image, sizes: s.phase === "quiz" ? SIZES.quiz : SIZES.survey }]
+        : [],
+  );
+
 type FlowState = {
+  /** Version des questions et heure de début : un parcours périmé n'est pas repris. */
+  version: string;
+  startedAt: number;
   index: number;
   answers: Record<string, AnswerValue>;
   scores: Record<string, number>;
@@ -39,7 +59,7 @@ type FlowState = {
   revealed: boolean;
 };
 
-const INITIAL: FlowState = { index: 0, answers: {}, scores: {}, revealed: false };
+const newRun = (): FlowState => ({ version: CONTENT_VERSION, startedAt: Date.now(), index: 0, answers: {}, scores: {}, revealed: false });
 const keyOf = (phase: Phase, id: string) => `${phase}:${id}`;
 
 /** Nombre de réponses considérées comme justes au quiz. */
@@ -49,7 +69,9 @@ export const countCorrect = (scores: Record<string, number>) =>
 export function Flow({ locale, t }: { locale: Locale; t: Dict }) {
   const router = useRouter();
   const hydrated = useHydrated();
-  const [state, setState] = useState<FlowState | null>(() => (isBrowser ? (load<FlowState>(KEYS.flow) ?? INITIAL) : null));
+  // Parcours déjà terminé (bouton « retour » du navigateur) : on ne le rejoue pas sur la même session.
+  const [finished] = useState(() => isBrowser && hasFinished());
+  const [state, setState] = useState<FlowState | null>(() => (isBrowser && !hasFinished() ? (loadRun<FlowState>() ?? newRun()) : null));
   const stateRef = useRef(state);
   useEffect(() => {
     stateRef.current = state;
@@ -63,9 +85,13 @@ export function Flow({ locale, t }: { locale: Locale; t: Dict }) {
       router.replace(`/${locale}`);
       return;
     }
+    if (finished) {
+      router.replace(`/${locale}/merci`);
+      return;
+    }
     sync.setLocale(locale);
     sync.start();
-  }, [locale, router]);
+  }, [finished, locale, router]);
 
   useEffect(() => {
     if (state) save(KEYS.flow, state);
@@ -75,7 +101,6 @@ export function Flow({ locale, t }: { locale: Locale; t: Dict }) {
   useEffect(() => {
     shownAt.current = performance.now();
     advancing.current = false;
-    window.scrollTo({ top: 0 });
   }, [index]);
 
   const finish = useCallback(
@@ -83,7 +108,8 @@ export function Flow({ locale, t }: { locale: Locale; t: Dict }) {
       save(KEYS.result, { correct: countCorrect(s.scores), total: CONTENT.quiz.length });
       sync.complete();
       remove(KEYS.flow);
-      router.push(`/${locale}/merci`);
+      // replace : le bouton « retour » ramène à l'accueil, pas dans un parcours déjà terminé.
+      router.replace(`/${locale}/merci`);
     },
     [locale, router],
   );
@@ -138,56 +164,61 @@ export function Flow({ locale, t }: { locale: Locale; t: Dict }) {
   const isQuiz = screen.kind === "q" ? screen.phase === "quiz" : screen.to === "quiz";
   const questionKey = screen.kind === "q" ? keyOf(screen.phase, screen.q.id) : "";
 
+  const theme = isQuiz ? "theme-quiz" : "";
+
   return (
-    <div
-      className={`mx-auto flex w-full flex-1 flex-col px-4 pb-8 sm:px-6 ${isQuiz ? "theme-quiz max-w-5xl" : "max-w-2xl"}`}
-    >
-      <div className="sticky top-0 z-20 -mx-4 bg-bg/90 px-4 pt-3 pb-3 backdrop-blur sm:-mx-6 sm:px-6">
-        <Progress t={t} phase={phase} fracInPhase={frac} />
-      </div>
+    <MotionConfig reducedMotion="user">
+      <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 pb-8 sm:px-6">
+        <PhotoPreloader photos={upcomingPhotos(state.index)} />
+        {/* Fond opaque, sans flou : le flou d'arrière-plan fait scintiller Safari pendant les animations. */}
+        <div className={`sticky top-0 z-20 -mx-4 bg-bg px-4 pt-3 pb-3 sm:-mx-6 sm:px-6 ${theme}`}>
+          <Progress t={t} phase={phase} fracInPhase={frac} />
+        </div>
 
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.section
-          key={state.index}
-          initial={{ opacity: 0, x: 24 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -24 }}
-          transition={{ duration: 0.22, ease: "easeOut" }}
-          className="mt-3 flex-1 md:mt-6"
-        >
-          {screen.kind === "break" ? (
-            <BreakScreen t={t} to={screen.to} scores={state.scores} onNext={() => advanceFrom(state.index)} />
-          ) : screen.phase === "quiz" ? (
-            <QuizScreen
-              screen={screen}
-              locale={locale}
-              t={t}
-              scores={state.scores}
-              answer={state.answers[questionKey]}
-              revealed={state.revealed}
-              onAnswer={onAnswer}
-              onNext={() => advanceFrom(state.index)}
-            />
-          ) : (
-            <SurveyScreen
-              screen={screen}
-              locale={locale}
-              t={t}
-              answer={state.answers[questionKey]}
-              onAnswer={onAnswer}
-            />
+        {/* Couleur et largeur sont portées par l'écran lui-même : celui qui sort garde les siennes jusqu'au bout.
+            Le retour en haut de page se fait entre les deux écrans, jamais pendant qu'on voit l'ancien. */}
+        <AnimatePresence mode="wait" initial={false} onExitComplete={() => window.scrollTo({ top: 0, behavior: "instant" })}>
+          <motion.section
+            key={state.index}
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0, transition: { duration: 0.18, ease: "easeOut" } }}
+            exit={{ opacity: 0, transition: { duration: 0.09, ease: "easeIn" } }}
+            className={`mx-auto mt-3 w-full md:mt-6 ${theme} ${isQuiz ? "max-w-5xl" : "max-w-2xl"}`}
+          >
+            {screen.kind === "break" ? (
+              <BreakScreen t={t} to={screen.to} scores={state.scores} onNext={() => advanceFrom(state.index)} />
+            ) : screen.phase === "quiz" ? (
+              <QuizScreen
+                screen={screen}
+                locale={locale}
+                t={t}
+                scores={state.scores}
+                answer={state.answers[questionKey]}
+                revealed={state.revealed}
+                onAnswer={onAnswer}
+                onNext={() => advanceFrom(state.index)}
+              />
+            ) : (
+              <SurveyScreen
+                screen={screen}
+                locale={locale}
+                t={t}
+                answer={state.answers[questionKey]}
+                onAnswer={onAnswer}
+              />
+            )}
+          </motion.section>
+        </AnimatePresence>
+
+        <div className="mx-auto mt-4 h-12 w-full max-w-2xl">
+          {canGoBack && (
+            <button type="button" className="btn btn-ghost -ml-3" onClick={() => setState({ ...state, index: state.index - 1 })}>
+              ← {t.flow.back}
+            </button>
           )}
-        </motion.section>
-      </AnimatePresence>
-
-      <div className="mt-4 h-12">
-        {canGoBack && (
-          <button type="button" className="btn btn-ghost -ml-3" onClick={() => setState({ ...state, index: state.index - 1 })}>
-            ← {t.flow.back}
-          </button>
-        )}
+        </div>
       </div>
-    </div>
+    </MotionConfig>
   );
 }
 
@@ -223,10 +254,10 @@ function SurveyScreen({
   return (
     <div className="overflow-hidden rounded-3xl border border-line bg-surface shadow-sm">
       {q.image && (
-        <Photo name={q.image} className="aspect-[16/5]" sizes="(min-width: 768px) 672px, 100vw" overlay="bottom" priority>
+        <Photo name={q.image} className="aspect-[16/5]" sizes={SIZES.survey} overlay="bottom">
           <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 p-4 pb-5">
-            <DimChip q={q} t={t} className="bg-white/90 text-ink" />
-            <span className="rounded-full bg-black/40 px-2.5 py-1 text-xs font-semibold text-white backdrop-blur">
+            <DimChip q={q} t={t} className="bg-white/90 text-neutral-900" />
+            <span className="rounded-full bg-black/40 px-2.5 py-1 text-xs font-semibold text-white">
               {screen.i + 1} / {screen.n}
             </span>
           </div>
@@ -276,16 +307,15 @@ function QuizScreen({
       {q.image && (
         <Photo
           name={q.image}
-          className="aspect-[16/7] rounded-3xl lg:sticky lg:top-24 lg:aspect-auto lg:h-[min(34rem,calc(100dvh-8rem))]"
-          sizes="(min-width: 1024px) 400px, 100vw"
+          className="aspect-[16/7] rounded-3xl lg:sticky lg:top-24 lg:aspect-auto lg:h-[min(34rem,calc(100svh-8rem))]"
+          sizes={SIZES.quiz}
           overlay="bottom"
-          priority
         >
           <div className="absolute inset-x-0 bottom-0 flex flex-wrap items-end gap-2 p-4 pb-5 lg:p-6 lg:pb-8">
             <span className="rounded-full bg-brand px-3 py-1 text-xs font-bold tracking-wide text-brand-ink uppercase">
               Quiz · {screen.i + 1}/{screen.n}
             </span>
-            <DimChip q={q} t={t} className="bg-white/90 text-ink" />
+            <DimChip q={q} t={t} className="bg-white/90 text-neutral-900" />
           </div>
         </Photo>
       )}
@@ -316,8 +346,6 @@ function ScoreDots({ scores, current }: { scores: Record<string, number>; curren
   );
 }
 
-const BREAK_IMAGE = { quiz: "servers-corridor", post: "bulbs" } as const;
-
 /** Écran de transition plein cadre, sur photo. */
 function BreakScreen({
   t,
@@ -333,12 +361,12 @@ function BreakScreen({
   const b = t.flow.breaks[to];
   const correct = countCorrect(scores);
   return (
-    <Photo name={BREAK_IMAGE[to]} className="min-h-[28rem] rounded-3xl md:min-h-[32rem]" overlay="full" priority>
+    <Photo name={BREAK_IMAGE[to]} className="min-h-[28rem] rounded-3xl md:min-h-[32rem]" sizes={SIZES.break} overlay="full">
       <div className="relative flex min-h-[28rem] flex-col items-center justify-center px-6 py-12 text-center text-white md:min-h-[32rem]">
         <div className="text-6xl" aria-hidden>{b.emoji}</div>
         <h1 className="mt-4 text-3xl font-extrabold sm:text-4xl">{b.title}</h1>
         {to === "post" && (
-          <p className="mt-5 rounded-2xl bg-white/15 px-5 py-3 text-lg backdrop-blur">
+          <p className="mt-5 rounded-2xl bg-white/15 px-5 py-3 text-lg">
             {t.flow.score} <strong>{correct} / {CONTENT.quiz.length}</strong>
           </p>
         )}

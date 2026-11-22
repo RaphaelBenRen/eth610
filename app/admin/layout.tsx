@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default function AdminLayout({ children }: LayoutProps<"/admin">) {
   return (
     <html lang="fr" className={`${geist.variable} h-full antialiased`}>
-      <body className="min-h-dvh">{children}</body>
+      <body className="min-h-svh">{children}</body>
     </html>
   );
 }

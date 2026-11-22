@@ -26,6 +26,8 @@ export async function POST(req: Request) {
 
   const session = await getOpenSession(sessionId);
   if (!session) return Response.json({ error: "session" }, { status: 404 });
+  // Parcours terminé : les réponses sont figées.
+  if (session.completed_at) return Response.json({ ok: true, closed: true });
   // Une réponse de quiz ne peut pas être modifiée une fois enregistrée (la correction a été vue).
   if (phase === "quiz") {
     const existing = await getStore().listAnswers(sessionId);

@@ -30,7 +30,7 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="flex min-h-dvh items-center justify-center px-4">
+    <div className="flex min-h-svh items-center justify-center px-4">
       <form onSubmit={submit} className="w-full max-w-sm rounded-3xl border border-line bg-surface p-8 shadow-sm">
         <h1 className="text-xl font-bold">🔒 Dashboard admin</h1>
         <p className="mt-1 text-sm text-muted">Accès réservé à l&apos;équipe du projet.</p>
