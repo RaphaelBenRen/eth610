@@ -1,8 +1,8 @@
 "use client";
 
-import { AnimatePresence, motion, MotionConfig } from "motion/react";
+import { MotionConfig } from "motion/react";
 import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { CONTENT, CONTENT_VERSION } from "@/content";
 import { hasFinished, KEYS, load, loadRun, remove, save } from "@/lib/client/storage";
 import { sync } from "@/lib/client/sync";
@@ -31,22 +31,14 @@ const SCREENS: Screen[] = [
   ...phaseScreens("post"),
 ];
 
-const SIZES = {
-  survey: "(min-width: 768px) 672px, 100vw",
-  quiz: "(min-width: 1024px) 400px, 100vw",
-  break: "(min-width: 1024px) 976px, 100vw",
-};
 const BREAK_IMAGE = { quiz: "servers-corridor", post: "bulbs" } as const;
 
-/** Photos des deux prochains écrans, à charger pendant qu'on lit l'écran courant. */
+/** Photos des trois prochains écrans, à charger pendant qu'on lit l'écran courant. */
 const upcomingPhotos = (index: number) =>
-  SCREENS.slice(index + 1, index + 3).flatMap((s) =>
-    s.kind === "break"
-      ? [{ name: BREAK_IMAGE[s.to], sizes: SIZES.break }]
-      : s.q.image
-        ? [{ name: s.q.image, sizes: s.phase === "quiz" ? SIZES.quiz : SIZES.survey }]
-        : [],
-  );
+  SCREENS.slice(index + 1, index + 4).flatMap((s) => (s.kind === "break" ? [BREAK_IMAGE[s.to]] : s.q.image ? [s.q.image] : []));
+
+/** Juste après un changement d'écran, un second tap involontaire ne doit pas répondre à la nouvelle question. */
+const TAP_GUARD_MS = 350;
 
 type FlowState = {
   /** Version des questions et heure de début : un parcours périmé n'est pas repris. */
@@ -98,9 +90,11 @@ export function Flow({ locale, t }: { locale: Locale; t: Dict }) {
   }, [state]);
 
   const index = state?.index;
-  useEffect(() => {
+  // Layout effect : le retour en haut de page a lieu dans la même image que le nouveau contenu.
+  useLayoutEffect(() => {
     shownAt.current = performance.now();
     advancing.current = false;
+    window.scrollTo({ top: 0, behavior: "instant" });
   }, [index]);
 
   const finish = useCallback(
@@ -139,6 +133,7 @@ export function Flow({ locale, t }: { locale: Locale; t: Dict }) {
   const onAnswer = (value: AnswerValue) => {
     const cur = stateRef.current;
     if (screen.kind !== "q" || !cur || cur.index !== state.index || cur.revealed || advancing.current) return;
+    if (performance.now() - shownAt.current < TAP_GUARD_MS) return;
     const { phase, q } = screen;
     const k = keyOf(phase, q.id);
     const timeMs = Math.round(performance.now() - shownAt.current);
@@ -169,46 +164,31 @@ export function Flow({ locale, t }: { locale: Locale; t: Dict }) {
   return (
     <MotionConfig reducedMotion="user">
       <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col px-4 pb-8 sm:px-6">
-        <PhotoPreloader photos={upcomingPhotos(state.index)} />
+        <PhotoPreloader names={upcomingPhotos(state.index)} />
         {/* Fond opaque, sans flou : le flou d'arrière-plan fait scintiller Safari pendant les animations. */}
         <div className={`sticky top-0 z-20 -mx-4 bg-bg px-4 pt-3 pb-3 sm:-mx-6 sm:px-6 ${theme}`}>
           <Progress t={t} phase={phase} fracInPhase={frac} />
         </div>
 
-        {/* Couleur et largeur sont portées par l'écran lui-même : celui qui sort garde les siennes jusqu'au bout.
-            Le retour en haut de page se fait entre les deux écrans, jamais pendant qu'on voit l'ancien. */}
-        <AnimatePresence mode="wait" initial={false} onExitComplete={() => window.scrollTo({ top: 0, behavior: "instant" })}>
-          <motion.section
-            key={state.index}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0, transition: { duration: 0.18, ease: "easeOut" } }}
-            exit={{ opacity: 0, transition: { duration: 0.09, ease: "easeIn" } }}
-            className={`mx-auto mt-3 w-full md:mt-6 ${theme} ${isQuiz ? "max-w-5xl" : "max-w-2xl"}`}
-          >
-            {screen.kind === "break" ? (
-              <BreakScreen t={t} to={screen.to} scores={state.scores} onNext={() => advanceFrom(state.index)} />
-            ) : screen.phase === "quiz" ? (
-              <QuizScreen
-                screen={screen}
-                locale={locale}
-                t={t}
-                scores={state.scores}
-                answer={state.answers[questionKey]}
-                revealed={state.revealed}
-                onAnswer={onAnswer}
-                onNext={() => advanceFrom(state.index)}
-              />
-            ) : (
-              <SurveyScreen
-                screen={screen}
-                locale={locale}
-                t={t}
-                answer={state.answers[questionKey]}
-                onAnswer={onAnswer}
-              />
-            )}
-          </motion.section>
-        </AnimatePresence>
+        {/* Pas d'animation de sortie : le cadre reste en place et seul son contenu change (aucun écran vide entre deux questions). */}
+        <section className={`mx-auto mt-3 w-full md:mt-6 ${theme} ${isQuiz ? "max-w-5xl" : "max-w-2xl"}`}>
+          {screen.kind === "break" ? (
+            <BreakScreen t={t} to={screen.to} scores={state.scores} onNext={() => advanceFrom(state.index)} />
+          ) : screen.phase === "quiz" ? (
+            <QuizScreen
+              screen={screen}
+              locale={locale}
+              t={t}
+              scores={state.scores}
+              answer={state.answers[questionKey]}
+              revealed={state.revealed}
+              onAnswer={onAnswer}
+              onNext={() => advanceFrom(state.index)}
+            />
+          ) : (
+            <SurveyScreen screen={screen} locale={locale} t={t} answer={state.answers[questionKey]} onAnswer={onAnswer} />
+          )}
+        </section>
 
         <div className="mx-auto mt-4 h-12 w-full max-w-2xl">
           {canGoBack && (
@@ -254,7 +234,7 @@ function SurveyScreen({
   return (
     <div className="overflow-hidden rounded-3xl border border-line bg-surface shadow-sm">
       {q.image && (
-        <Photo name={q.image} className="aspect-[16/5]" sizes={SIZES.survey} overlay="bottom">
+        <Photo name={q.image} className="aspect-[16/5]" overlay="bottom">
           <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 p-4 pb-5">
             <DimChip q={q} t={t} className="bg-white/90 text-neutral-900" />
             <span className="rounded-full bg-black/40 px-2.5 py-1 text-xs font-semibold text-white">
@@ -270,7 +250,9 @@ function SurveyScreen({
         </p>
         <h1 className="relative mt-3 pl-5 text-lg leading-snug font-semibold text-balance sm:text-xl">
           <span aria-hidden className="absolute top-0 bottom-0 left-0 w-1 rounded-full bg-brand" />
-          {q.prompt[locale]}
+          <span key={q.id} className="soft-in block">
+            {q.prompt[locale]}
+          </span>
         </h1>
         {q.help && <p className="mt-1 text-sm text-muted">{q.help[locale]}</p>}
         <div className="mt-6">
@@ -308,7 +290,6 @@ function QuizScreen({
         <Photo
           name={q.image}
           className="aspect-[16/7] rounded-3xl lg:sticky lg:top-24 lg:aspect-auto lg:h-[min(34rem,calc(100svh-8rem))]"
-          sizes={SIZES.quiz}
           overlay="bottom"
         >
           <div className="absolute inset-x-0 bottom-0 flex flex-wrap items-end gap-2 p-4 pb-5 lg:p-6 lg:pb-8">
@@ -321,12 +302,14 @@ function QuizScreen({
       )}
       <div className="rounded-3xl border border-line bg-surface p-5 shadow-sm sm:p-8">
         <ScoreDots scores={scores} current={screen.i} />
-        <h1 className="mt-4 text-xl leading-snug font-bold text-balance sm:text-2xl">{q.prompt[locale]}</h1>
-        {q.help && <p className="mt-1 text-sm text-muted">{q.help[locale]}</p>}
-        <div className="mt-6">
-          <QuestionView q={q} locale={locale} t={t} answer={answer} revealed={revealed} onAnswer={onAnswer} />
+        <div key={q.id} className="soft-in">
+          <h1 className="mt-4 text-xl leading-snug font-bold text-balance sm:text-2xl">{q.prompt[locale]}</h1>
+          {q.help && <p className="mt-1 text-sm text-muted">{q.help[locale]}</p>}
+          <div className="mt-6">
+            <QuestionView q={q} locale={locale} t={t} answer={answer} revealed={revealed} onAnswer={onAnswer} />
+          </div>
+          {revealed && <Feedback q={q} score={scores[keyOf("quiz", q.id)] ?? 0} locale={locale} t={t} onNext={onNext} />}
         </div>
-        {revealed && <Feedback q={q} score={scores[keyOf("quiz", q.id)] ?? 0} locale={locale} t={t} onNext={onNext} />}
       </div>
     </div>
   );
@@ -361,7 +344,7 @@ function BreakScreen({
   const b = t.flow.breaks[to];
   const correct = countCorrect(scores);
   return (
-    <Photo name={BREAK_IMAGE[to]} className="min-h-[28rem] rounded-3xl md:min-h-[32rem]" sizes={SIZES.break} overlay="full">
+    <Photo name={BREAK_IMAGE[to]} className="min-h-[28rem] rounded-3xl md:min-h-[32rem]" overlay="full">
       <div className="relative flex min-h-[28rem] flex-col items-center justify-center px-6 py-12 text-center text-white md:min-h-[32rem]">
         <div className="text-6xl" aria-hidden>{b.emoji}</div>
         <h1 className="mt-4 text-3xl font-extrabold sm:text-4xl">{b.title}</h1>
@@ -371,7 +354,7 @@ function BreakScreen({
           </p>
         )}
         <p className="mt-4 max-w-md text-white/85">{b.text.replace("{n}", String(CONTENT.quiz.length))}</p>
-        <button type="button" className="btn btn-primary mt-8 w-full sm:w-auto" onClick={onNext} autoFocus>
+        <button type="button" className="btn btn-primary mt-8 w-full sm:w-auto" onClick={onNext}>
           {b.cta} →
         </button>
       </div>

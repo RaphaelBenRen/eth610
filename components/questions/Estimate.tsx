@@ -52,7 +52,7 @@ export function Estimate({ q, locale, t, answer, revealed, onAnswer }: QProps<Es
         }
         markerFrom={pos / STEPS}
       />
-      {!revealed && <p className="mt-2 text-center text-sm text-muted">{t.flow.estimateHint}</p>}
+      <p className="mt-2 text-center text-sm text-muted">{t.flow.estimateHint}</p>
       {!revealed && <SubmitButton t={t} disabled={!touched} onClick={submit} />}
     </>
   );

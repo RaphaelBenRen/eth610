@@ -61,16 +61,18 @@ export function Slider({ min, max, step, value, touched, disabled, label, valueT
       <div className="relative">
         <input
           type="range"
-          className={`range ${touched ? "" : "untouched"}`}
+          className={`range ${touched ? "" : "untouched"} ${disabled ? "pointer-events-none" : ""}`}
           style={{ "--pct": left(frac) } as React.CSSProperties}
           min={min}
           max={max}
           step={step}
           value={value}
-          disabled={disabled}
+          // Pas de vrai `disabled` : Safari iOS grise alors le curseur d'un coup. On le fige sans changer son aspect.
+          aria-disabled={disabled}
+          tabIndex={disabled ? -1 : undefined}
           aria-label={label}
           aria-valuetext={valueText}
-          onChange={(e) => onChange(Number(e.target.value))}
+          onChange={(e) => !disabled && onChange(Number(e.target.value))}
           // Au relâchement (pas à l'appui) : faire défiler la page avec le doigt sur le curseur ne compte pas comme une réponse.
           onPointerUp={(e) => onChange(Number((e.target as HTMLInputElement).value))}
         />
@@ -92,7 +94,8 @@ export function Slider({ min, max, step, value, touched, disabled, label, valueT
       </div>
 
       {ticks && (
-        <div className={`relative h-6 text-xs text-muted ${marker ? "mt-8" : "mt-1"}`}>
+        // La place de l'étiquette « bonne réponse » est réservée dès le départ.
+        <div className="relative mt-8 h-6 text-xs text-muted">
           {ticks.map((tk) => (
             <span key={tk.label} className="absolute -translate-x-1/2 tabular-nums" style={{ left: left(tk.frac) }}>
               {tk.label}

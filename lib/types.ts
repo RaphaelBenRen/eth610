@@ -22,7 +22,7 @@ type Base = {
   help?: L;
   /** Thème affiché en étiquette : environnement, société, économie. */
   dimension?: Dimension;
-  /** Photo d'illustration : nom du fichier dans public/images (sans .jpg), crédit dans content/image-credits.ts. */
+  /** Photo d'illustration : nom du fichier dans assets/photos (sans .webp), crédit dans content/image-credits.ts. */
   image?: string;
   /** Libellé court pour les graphiques du dashboard. */
   short?: L;

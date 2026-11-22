@@ -39,7 +39,7 @@ export function Gauge({ q, locale, t, answer, revealed, onAnswer }: QProps<Gauge
         }
         markerFrom={frac(value)}
       />
-      <div className={`flex justify-between gap-4 text-sm text-muted ${revealed ? "mt-9" : "mt-1"}`}>
+      <div className="mt-9 flex justify-between gap-4 text-sm text-muted">
         <span>{q.minLabel?.[locale] ?? formatUnit(min, q.unit, locale)}</span>
         <span className="text-right">{q.maxLabel?.[locale] ?? formatUnit(max, q.unit, locale)}</span>
       </div>

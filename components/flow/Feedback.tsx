@@ -1,6 +1,5 @@
 "use client";
 
-import { motion } from "motion/react";
 import { useEffect, useRef } from "react";
 import { formatCorrect } from "@/lib/format";
 import { verdict } from "@/lib/scoring";
@@ -34,16 +33,17 @@ export function Feedback({
 
   useEffect(() => {
     // On descend juste assez pour lire la correction, en gardant son titre (et le curseur au-dessus) visibles :
-    // la carte ne remonte jamais plus haut que 45 % de l'écran, donc jamais sous la barre de progression.
+    // la carte ne remonte jamais plus haut que la moitié de l'écran, donc jamais sous la barre de progression.
     const box = ref.current?.getBoundingClientRect();
     if (box) {
       const toShowAll = box.bottom + 24 - window.innerHeight;
-      const toMidScreen = box.top - window.innerHeight * 0.45;
+      const toMidScreen = box.top - window.innerHeight * 0.52;
       const calm = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       const top = Math.max(0, Math.min(toShowAll, toMidScreen));
       if (top > 0) window.scrollBy({ top, behavior: calm ? "instant" : "smooth" });
     }
-    btn.current?.focus({ preventScroll: true });
+    // Sur écran tactile, le focus ferait apparaître un halo autour du bouton.
+    if (window.matchMedia("(hover: hover)").matches) btn.current?.focus({ preventScroll: true });
   }, []);
 
   const explanation = "explanation" in q ? q.explanation : undefined;
@@ -52,12 +52,9 @@ export function Feedback({
   const comparison = q.type === "estimate" ? q.comparison?.[locale] : undefined;
 
   return (
-    <motion.div
+    <div
       ref={ref}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.25 }}
-      className={`mt-6 rounded-2xl border-2 p-5 ${s.box}`}
+      className={`soft-in mt-6 rounded-2xl border-2 p-5 ${s.box}`}
       role="status"
       aria-live="polite"
     >
@@ -102,6 +99,6 @@ export function Feedback({
           {t.flow.next} →
         </button>
       </div>
-    </motion.div>
+    </div>
   );
 }
